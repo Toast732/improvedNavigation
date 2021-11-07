@@ -1,0 +1,21 @@
+{
+  "domElement": "<improved-navigation></improved-navigation>",
+  "name": "Improved Navigation",
+  "types": [
+    "ui.apps.categories.vehicle_info",
+    "ui.apps.categories.info"
+  ],
+  "description": "Navigation screen for your UI",
+  "css": {
+    "left": "500px",
+    "height": "300px",
+    "width": "500px",
+    "min-width": "150px",
+    "min-height": "150px",
+    "top": "300px"
+  },
+  "author": "Toastery, beamng.ui Team",
+  "preserveAspectRatio": false,
+  "version": "0.1.2.1",
+  "directive": "improvedNavigation"
+}
