@@ -4,7 +4,6 @@ angular.module('beamng.apps')
       template: `
       <div style="height: 100%; width: 100%; position: relative;">
         <!-- map container -->
-        <span style="font-size:1.3em">{{ zoomMag }}</span>
         <div id="overflow-wrap" style=" width: 100%; height: 100%; overflow: hidden">
           <div id="mapContainer" style="overflow: visible;">
             <svg style="overflow: visible">
@@ -27,7 +26,10 @@ angular.module('beamng.apps')
             </svg>
           </div>
         </div>
-
+        <!-- Zoom Display -->
+        <div style="font-size: 1.2em; padding: 0.2%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; bottom:0px; left:0px">
+          {{ zoomMag }}
+        </div>
         <!-- Collectible Display -->
         <div ng-if="collectableTotal > 0" style="font-size: 1.2em; padding: 1%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; top:15px; left: 15px">
           <md-icon style="margin-bottom: 3px;" md-svg-src="{{ '/ui/modules/apps/Navigation/snowman.svg' }}" />
@@ -47,6 +49,7 @@ angular.module('beamng.apps')
 
       </div>
       `,
+      
       replace: true,
       restrict: 'EA',
       link: function (scope, element, attrs) {
@@ -73,8 +76,18 @@ angular.module('beamng.apps')
         var mapZoom = -500;
         var mapScale = 1
         var routeScale = 1/3;
-        var zoomStates = [0, -500, -1000, -2000, -4000, -8000, -16000]
-        var zoomSlot = 1;
+        var zoomStates = [1000, 500, 0, -500, -1000, -2000, -4000, -8000, -16000] // the magnification levels
+        var zoomMags = []
+        // Calculates the magnification levels to display in the gui, This allows for the magnification levels to automatically change if you were to add or remove more magnification levels (zoomStates)
+        var baseZoomLevel = Math.floor(zoomStates.length / 2) // gets the zoom level that is in the middle
+        for (var i=0; i < zoomStates.length; i++) {
+          if (zoomStates[i] < zoomStates[baseZoomLevel]) {
+            zoomMags[i] = zoomStates[baseZoomLevel]/zoomStates[i]
+          } else {
+            zoomMags[i] = Math.pow(2, (baseZoomLevel - i))
+          }
+        }
+        var zoomSlot = baseZoomLevel;
         var t = 0;
         // receive live data from the GE map
         var vehicleShapes = {};
@@ -381,8 +394,6 @@ angular.module('beamng.apps')
         }
 
         function updateNavMap(data) {
-          // zoom magnification display
-          zoomMag = Math.max(1, 1)
           // player changed? update shapes?
           if (lastcontrolID != data.controlID) {
             if (lastcontrolID != -1) updatePlayerShape(lastcontrolID, data); // update shape of old vehicle
@@ -397,10 +408,7 @@ angular.module('beamng.apps')
               var px = -o.pos[0] / mapScale;
               var py = o.pos[1] / mapScale;
               var rot = Math.floor(-o.rot);
-              var iconScale = Math.max(1, 1 + mapZoom / -500 * 0.15); // (Update 0.1.2.2) Vehicle Icons now scale with the map's zoom
-              console.log("1: " + iconScale);
-              console.log("2: " + mapZoom);
-              console.log("3: " + mapZoom / -500 / 4);
+              var iconScale = Math.max(1, 1 + mapZoom / -500 * 0.151);
               var show = 1;
               if (o.marker == null) {
                 o.marker = 'default';
@@ -408,13 +416,14 @@ angular.module('beamng.apps')
               if (o.marker == 'hidden') {
                 show = 0;
               }
-
               vehicleShapes[key].attr({"transform": "translate(" + px + "," + py + ") scale(" + iconScale + "," + iconScale + ") rotate(" + rot + ")", "opacity": show});
             }
             else {
               updatePlayerShape(key, data);
             }
           }
+          // zoom magnification display
+          scope.zoomMag = zoomMags[zoomSlot] + "x zoom"
           // delete missing vehicles
           for (var key in vehicleShapes) {
             if (!data.objects[key]) {
@@ -433,7 +442,7 @@ angular.module('beamng.apps')
             element.css({
               'position': 'relative',
               'margin': '10px',
-              'perspective': '2000px', // (Update 0.1.2.1) by changing this number, it allows the map to not flicker at high speeds, from testing this seems to cause no side effects
+              'perspective': '2000px',
               'background-color': 'rgba(50, 50, 50, 0.6)',
               'border': '2px solid rgba(180, 180, 180, 0.8)',
             });
@@ -459,7 +468,7 @@ angular.module('beamng.apps')
                 1024
               ];
             }
-            if (data.terrainSize) { // if the data.terrainSize exists, this fixes the issue where if this is not set, the map would not work at all (Added 0.1.2.1)
+            if (data.terrainSize) {
               mapScale = Math.max(Math.max(data.terrainSize[0], data.terrainSize[1]) / 2048, 1) // check whether to scale the map or size the map, if the size is over 8192 it causes an error which breaks the map, this allows larger maps to work without reducing the accuracy of smaller maps
             } else {
               mapScale = 1;
