@@ -73,6 +73,7 @@ angular.module('beamng.apps')
 
         var red = true;
 
+        var baseMapZoomSpeed = 25;
         var mapZoom = -500;
         var mapScale = 1
         var routeScale = 1/3;
@@ -111,11 +112,43 @@ angular.module('beamng.apps')
             'background-color': 'rgba(50, 50, 50, ' + visibilitySlots[activeVisibilitySlot] + ')',
           })
         });
-
+        function sleep(ms) {
+          return new Promise(resolve => setTimeout(resolve, ms));
+        }
         element[0].addEventListener('contextmenu', function(e) {
+          console.log("old map zoom: " + mapZoom)
+          var oldZoomSlot = zoomSlot;
           zoomSlot++;
           mapZoomSlot = zoomSlot < zoomStates.length ? zoomSlot : zoomSlot = 0;
-          mapZoom = zoomStates[mapZoomSlot];
+          async function animatedZoom() {
+            var mapZoomSpeed = baseMapZoomSpeed*(zoomStates[mapZoomSlot]-zoomStates[oldZoomSlot])/zoomStates[baseZoomLevel]
+            console.log("mapZoomSpeed: " + mapZoomSpeed)
+            var i = 0
+            while (mapZoom != zoomStates[mapZoomSlot]) {
+              i++
+              if (i > 1000) {
+                mapZoom = zoomStates[mapZoomSlot] // makes sure it doesnt get stuck in an infinite loop
+                console.error("the animated zoom has caused an error, it has repeated over 1000 times, this is not normal")
+                break;
+              }
+              if (mapZoom > zoomStates[0]) {
+                mapZoom = zoomStates[mapZoomSlot] // resets to how it should be
+                console.error("the animated zoom has caused an error, it has gone over the zoom limit, this is not normal")
+                break;
+              }
+              if (mapZoom < zoomStates[zoomStates.length - 1]) {
+                mapZoom = zoomStates[mapZoomSlot] // resets to how it should be
+                console.error("the animated zoom has caused an error, it has gone under` the zoom limit, this is not normal")
+                break;
+              }
+              mapZoom = mapZoom - mapZoomSpeed
+              await sleep(15);
+            }
+            console.log("Returned: " + mapZoom)
+            console.log("Expected: " + zoomStates[mapZoomSlot])
+            console.log("Calculated: " + mapZoomSpeed)
+          }
+          animatedZoom();
         });
 
         scope.$on('NavigationMapUpdate', function (event, data) {
