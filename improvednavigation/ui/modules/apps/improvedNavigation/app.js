@@ -75,8 +75,16 @@ angular.module('beamng.apps')
         <div id="checkboxes">
           <label for="navMapSmoothZoom" style="position: absolute; top:46px; left:30px;" class="checkbox">Smooth Zoom</label>
           <input type="checkbox" id="navMapSmoothZoom" style="position: absolute; top:50px; left:10px;"></input>
-          <label for="navMapDisplayZoom" style="position: absolute; top:76px; left:30px;" class="checkbox">Display Zoom</label>
+          <label for="navMapDisplayZoom" style="position: absolute; top:76px; left:30px;" class="checkbox">Display Zoom Level</label>
           <input type="checkbox" id="navMapDisplayZoom" style="position: absolute; top:80px; left:10px;"></input>
+          <label for="navMapSpeedTiedZoom" style="position: absolute; top:106px; left:30px;" class="checkbox">Speed Tied Zoom</label>
+          <input type="checkbox" id="navMapSpeedTiedZoom" style="position: absolute; top:110px; left:10px;"></input>
+          <label for="navMapElementScaleTiedZoom" style="position: absolute; top:136px; left:30px;" class="checkbox">Scale Map Elements with Zoom</label>
+          <input type="checkbox" id="ElementScaleTiedZoom" style="position: absolute; top:140px; left:10px;"></input>
+          <label for="navMapNorthLocked" style="position: absolute; top:166px; left:30px;" class="checkbox">Lock North</label>
+          <input type="checkbox" id="navMapNorthLocked" style="position: absolute; top:170px; left:10px;"></input>
+          <label for="navMapShowGrid" style="position: absolute; top:196px; left:30px;" class="checkbox">Show Grid</label>
+          <input type="checkbox" id="navMapShowGrid" style="position: absolute; top:200px; left:10px;"></input>
         </div>
         <!-- Collectible Display -->
         <div ng-if="collectableTotal > 0" style="font-size: 1.2em; padding: 1%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; top:15px; left: 15px">
@@ -98,7 +106,7 @@ angular.module('beamng.apps')
       `,
       replace: true,
       restrict: 'EA',
-      link: function (scope, element, attrs, ctrl) {
+      link: function (scope, element, attrs) {
         var root = element[0];
         var mapcontainer = root.children[0].children[0];
         var svg = mapcontainer.children[0]; 
@@ -119,6 +127,8 @@ angular.module('beamng.apps')
         var rotateMap = true;
         var viewParams = [];
 
+        var navMapData = null;
+
         var red = true;
 
         // make sure checkboxes are not visible
@@ -126,8 +136,8 @@ angular.module('beamng.apps')
         
         // load settings
         var config = [];
-        var configDefaults = [true, true];
-        var configKeys = ['navMapSmoothZoom', 'navMapDisplayZoom'];
+        var configDefaults = [true, true, true, true, false, true];
+        var configKeys = ['navMapSmoothZoom', 'navMapDisplayZoom', 'navMapSpeedTiedZoom', 'ElementScaleTiedZoom', 'navMapNorthLocked', 'navMapShowGrid'];
         for(i=0;configKeys.length>i;i++){
           config[i] = localStorage.getItem(configKeys[i]);
           if(!config[i]) { // if the setting does not exist, then create it
@@ -147,6 +157,7 @@ angular.module('beamng.apps')
         var mapScale = 1
         var routeScale = 1/3;
         var zoomStates = [1000, 500, 0, -500, -1000, -2000, -4000, -8000, -16000] // the magnification levels
+        var roadScaleZoom = [1, 1, 1, 1, 1, 1.3, 1.8, 2.8, 4.8]
         var zoomMags = []
         var settingsIsOpen = false
         // Calculates the magnification levels to display in the gui, This allows for the magnification levels to automatically change if you were to add or remove more magnification levels (zoomStates)
@@ -237,10 +248,16 @@ angular.module('beamng.apps')
                   await sleep(15);
                 }
               }
+              if(config[3] == 'true') {
+                setupMap(navMapData);
+              }
             }
             animatedZoom();
           } else {
             mapZoom = zoomStates[mapZoomSlot]
+            if(config[3] == 'true') {
+              setupMap(navMapData);
+            }
           }
         });
         scope.$on('NavigationMapUpdate', function (event, data) {
@@ -269,6 +286,7 @@ angular.module('beamng.apps')
         scope.$on('NavigationMap', function (event, data) {
           if (data && !init) {
             setupMap(data);
+            navMapData = data;
             init = true;
           }
         });
@@ -452,7 +470,12 @@ angular.module('beamng.apps')
 
         function centerMap(obj) {
             var speedZoomMultiplier = 2;
-            var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200); // speed tied zoom
+            if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
+              var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200); // speed tied zoom
+            } else {
+              var zoom = 0;
+            }
+            
 
             // center on what?
             var focusX = -obj.pos[0] / mapScale;
@@ -460,7 +483,12 @@ angular.module('beamng.apps')
 
             var borderWidth = root.children[0].clientWidth;
             var borderHeight = root.children[0].clientHeight;
-            var degreeNorth = rotateMap ? (obj.rot - 90) : 90;
+            if (config[4] == 'false') { // if lock north is disabled
+              var degreeNorth = obj.rot - 90;
+            } else {
+              var degreeNorth = 0;
+            }
+            var degreeNorth = config[4] == 'false' ? (obj.rot - 90) : 90;
             var npx = - Math.cos(degreeNorth * Math.PI / 180) * borderWidth * 0.75;
             var npy = borderHeight * 0.5 - Math.sin(degreeNorth * Math.PI / 180) * borderHeight * 0.75;
             var translateX = (((viewParams[0]) + borderWidth/2 - 10) + focusX + 10);
@@ -469,7 +497,11 @@ angular.module('beamng.apps')
           if(settingsIsOpen == false) {
 
             mapcontainer.style.transformOrigin = (((viewParams[0] * -1)) - focusX) + "px " + ((viewParams[1] * -1) - focusY) + "px"
-            mapcontainer.style.transform = "translate3d(" + translateX + "px, " + translateY + "px," + (mapZoom - (zoom * speedZoomMultiplier)) + "px)" + "rotateX(" + 0 + (zoom / 10) + "deg)" + "rotateZ(" + (180 + Utils.roundDec(obj.rot, 2)) + "deg)"
+            if(config[4] == 'false') { // if lock north is disabled
+              mapcontainer.style.transform = "translate3d(" + translateX + "px, " + translateY + "px," + (mapZoom - (zoom * speedZoomMultiplier)) + "px)" + "rotateX(" + 0 + (zoom / 10) + "deg)" + "rotateZ(" + (180 + Utils.roundDec(obj.rot, 2)) + "deg)"
+            } else {
+              mapcontainer.style.transform = "translate3d(" + translateX + "px, " + translateY + "px," + (mapZoom - (zoom * speedZoomMultiplier)) + "px)" + "rotateX(" + 0 + (zoom / 10) + "deg)" + "rotateZ(" + (270 + Utils.roundDec(90, 2)) + "deg)"
+            }
 
             northPointer.style.transform = 'translate(' + Math.min(Math.max(npx, -borderWidth / 2 - 2), borderWidth / 2) + 'px,' + Math.min(Math.max(npy, 0), borderHeight) + 'px)';
           } else {
@@ -541,7 +573,12 @@ angular.module('beamng.apps')
                 var px = -o.pos[0] / mapScale;
                 var py = o.pos[1] / mapScale;
                 var rot = Math.floor(-o.rot);
-                var iconScale = Math.max(1, 1 + mapZoom / -500 * 0.151);
+                if(config[3] == 'true') { // if the user wants map elements to scale with map zoom
+                  var iconScale = 1 + mapZoom / -500 * 0.151;
+                } else {
+                  var iconScale = 1;
+                }
+                
                 var show = 1;
                 if (o.marker == null) {
                   o.marker = 'default';
@@ -574,6 +611,9 @@ angular.module('beamng.apps')
                   element.css({
                     'background-color': 'rgba(50, 50, 50, ' + visibilitySlots[activeVisibilitySlot] + ')',
                   })
+                  if(i == 3 || i == 5) {
+                    setupMap(navMapData);
+                  }
                 }
               } else {
                 if(config[i] != 'false') {
@@ -585,6 +625,9 @@ angular.module('beamng.apps')
                   element.css({
                     'background-color': 'rgba(50, 50, 50, ' + visibilitySlots[activeVisibilitySlot] + ')',
                   })
+                  if(i == 3 || i == 5) {
+                    setupMap(navMapData);
+                  }
                 }
               }
             }
@@ -597,7 +640,7 @@ angular.module('beamng.apps')
             }
           }
         }
-        function setupMap(data) {
+        async function setupMap(data) {
           if(canvas == null) {
             //console.error('setupMap called before element is ready');
             return
@@ -607,7 +650,7 @@ angular.module('beamng.apps')
               'position': 'relative',
               'margin': '10px',
               'perspective': '2000px',
-              'background-color': 'rgba(50, 50, 50, 0.6)',
+              'background-color': 'rgba(50, 50, 50, ' + visibilitySlots[activeVisibilitySlot] + ')',
               'border': '2px solid rgba(180, 180, 180, 0.8)',
             });
             svg.style.transform = "scale(-1, -1)"
@@ -696,17 +739,18 @@ angular.module('beamng.apps')
                 'xlink:href': "/" + data.minimapImage,
               }).prependTo(svg);
 
-            } else {
+            } else if(config[5] == 'true') {
               // draw grid
+              
               var distX = maxX - minX
               var dx = 50
               for (var x = minX; x <= maxX * dx + 1; x += dx) {
-                _createLine({ x: x, y: minY * dx, radius: 1 / mapScale }, { x: x, y: maxY * dx, radius: 1 / mapScale }, '#FFFFFF55');
+                _createLine({ x: x, y: minY * dx, radius: 0.7 + 1 / mapScale * roadScaleZoom[zoomSlot]}, { x: x, y: maxY * dx, radius: 0.7 + 1 / mapScale * roadScaleZoom[zoomSlot]}, '#FFFFFF55');
               }
               var distY = maxY - minY
               var dy = 50
               for (var y = minY; y <= maxY * dy + 1; y += dy) {
-                _createLine({ x: minX * dy, y: y, radius: 1 / mapScale }, { x: maxX * dy, y: y, radius: 1 / mapScale }, '#FFFFFF55');
+                _createLine({ x: minX * dy, y: y, radius: 0.7 + 1 / mapScale * roadScaleZoom[zoomSlot]}, { x: maxX * dy, y: y, radius: 0.7 + 1 / mapScale * roadScaleZoom[zoomSlot]}, '#FFFFFF55');
               }
             }
 
@@ -731,13 +775,14 @@ angular.module('beamng.apps')
                       _createLine({
                         x: -el.pos[0] / mapScale + viewParams[2],
                         y: el.pos[1] / mapScale + viewParams[3],
-                        radius: Math.min(Math.max(el.radius, 0), 5) * 3 / mapScale
+                        radius: Math.min(Math.max(el.radius, 0), 5) * 3 / mapScale * roadScaleZoom[zoomSlot]
                       }, {
                           x: -el2.pos[0] / mapScale + viewParams[2],
                           y: el2.pos[1] / mapScale + viewParams[3],
-                          radius: Math.min(Math.max(el2.radius, 0), 5) * 3 / mapScale    // prevents massive blobs due to waypoints having larger radius'
+                          radius: Math.min(Math.max(el2.radius, 0), 5) * 3 / mapScale * roadScaleZoom[zoomSlot] // prevents massive blobs due to waypoints having larger radius'
                         }, getDrivabilityColor(drivability)
                       );
+                      console.log(roadScaleZoom[zoomSlot])
                     }
                   }
                 }
