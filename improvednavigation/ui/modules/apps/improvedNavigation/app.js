@@ -139,7 +139,7 @@ angular.module('beamng.apps')
           } else {
             document.getElementById(configKeys[i]).checked = false
           }
-          console.log([i] + " | " + config[i])
+          //console.log([i] + " | " + config[i])
         }
         
         var baseMapZoomSpeed = 25;
@@ -568,7 +568,6 @@ angular.module('beamng.apps')
                 if(config[i] != 'true') {
                   config[i] = 'true'
                   localStorage.setItem(configKeys[i], 'true');
-                  print("true")
                   // make sure not to change visiblity slot
                   activeVisibilitySlot--;
                   if (activeVisibilitySlot < 0) activeVisibilitySlot = 3;
