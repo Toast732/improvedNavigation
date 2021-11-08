@@ -13,5 +13,5 @@ Features:
 - Settings menu to toggle features
 - Saving settings
 
-Video link of the mod:
+Video of the mod:
 https://www.youtube.com/watch?v=H5UTOlVwXvA
