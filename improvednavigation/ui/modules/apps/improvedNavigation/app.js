@@ -26,9 +26,44 @@ angular.module('beamng.apps')
             </svg>
           </div>
         </div>
+        <!-- Styles -->
+        <style>
+          .button {
+            background-color: transparent;
+            border: none;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-size: 20px;
+            cursor: pointer;
+          }
+        </style>
+        <style>
+          .settingsMenu {
+            background-color: rgba(0, 0, 0, 0);
+            background-size: 0px, 0px;
+            background-repeat: no-repeat;
+            overflow: hidden;
+            border: none;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1px;
+            cursor: pointer;
+          }
+        </style>
         <!-- Zoom Display -->
-        <div style="font-size: 1.2em; padding: 0.2%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; bottom:0px; left:0px">
+        <div id="zoomDisplay" style="font-size: 1.2em; padding: 0.2%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; bottom:0px; left:0px">
           {{ zoomMag }}
+        </div>
+        <!-- Settings Menu -->
+        <foreignObject id="canvasWrapper" style="position:absolute; x:-100%; y:-100%; width:100%; height:100%; top:0px; left:0px; right:0px; bottom:0px">
+          <canvas id="settingsCanvas"  width="4096" height="4096"> </canvas>
+        </foreignObject>
+        <div style="font-size: 1.2em; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; bottom:0px; right:0px">
+          <button id="settingsMenuButton" class="button">
+            ⚙
+          </button>
         </div>
         <!-- Collectible Display -->
         <div ng-if="collectableTotal > 0" style="font-size: 1.2em; padding: 1%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; top:15px; left: 15px">
@@ -46,21 +81,19 @@ angular.module('beamng.apps')
             60% { transform: translateY(-2px); }
           }
         </style>
-
       </div>
       `,
-      
       replace: true,
       restrict: 'EA',
-      link: function (scope, element, attrs) {
-
+      link: function (scope, element, attrs, ctrl) {
         var root = element[0];
         var mapcontainer = root.children[0].children[0];
-        var svg = mapcontainer.children[0];
+        var svg = mapcontainer.children[0]; 
         //var canvas = svg.children[0];
         var canvas = document.getElementById('roadCanvas');
         var canvasWrapper = document.getElementById('canvasWrapper');
-
+        
+        var settingsCanvas = document.getElementById('settingsCanvas');
         var routeCanvas = document.getElementById('routeCanvas');
         var routeCanvasWrapper = document.getElementById('routeCanvasWrapper');
 
@@ -72,6 +105,18 @@ angular.module('beamng.apps')
         var viewParams = [];
 
         var red = true;
+        
+        // load settings
+        var config = [];
+        var configDefaults = [true, true];
+        var configKeys = ['navMapSmoothZoom', 'navMapSmoothZoom'];
+        for(i=0;configKeys.length>i;i++){
+          config[i] = localStorage.getItem(configKeys[i]);
+          if(!config[i]) { // if the setting does not exist, then create it
+            localStorage.setItem(configKeys[i], configDefaults[i]);
+            config[i] = localStorage.getItem(configKeys[i]);
+          }
+        }
 
         var baseMapZoomSpeed = 25;
         var mapZoom = -500;
@@ -79,6 +124,7 @@ angular.module('beamng.apps')
         var routeScale = 1/3;
         var zoomStates = [1000, 500, 0, -500, -1000, -2000, -4000, -8000, -16000] // the magnification levels
         var zoomMags = []
+        var settingsIsOpen = false
         // Calculates the magnification levels to display in the gui, This allows for the magnification levels to automatically change if you were to add or remove more magnification levels (zoomStates)
         var baseZoomLevel = Math.floor(zoomStates.length / 2) // gets the zoom level that is in the middle
         for (var i=0; i < zoomStates.length; i++) {
@@ -103,8 +149,31 @@ angular.module('beamng.apps')
 
         var quad = null;//new Quadtree({x:0, y:0, width:1, height:1});
 
-
+        function sleep(ms) {
+          return new Promise(resolve => setTimeout(resolve, ms));
+        }
         // ability to interact
+        function settingsMenu() {
+          // make sure not to change visiblity slot
+          activeVisibilitySlot--;
+          if (activeVisibilitySlot >= visibilitySlots.length) activeVisibilitySlot = 0;
+          element.css({
+            'background-color': 'rgba(50, 50, 50, ' + visibilitySlots[activeVisibilitySlot] + ')',
+          })
+          var ctx = settingsCanvas.getContext('2d');
+          if(settingsIsOpen == false) {
+            ctx.fillStyle = "rgba(50, 50, 50, 1)";
+            ctx.fillRect(0, 0, settingsCanvas.width, settingsCanvas.height);
+            ctx.font = "28px Tahoma, sans-serif";
+            ctx.fillStyle = "white";
+            ctx.fillText("Navigation Settings", 10, 30)
+            settingsIsOpen = true;
+          } else {
+            ctx.clearRect(0, 0, settingsCanvas.width, settingsCanvas.height)
+            settingsIsOpen = false;
+          }
+        }
+        document.getElementById("settingsMenuButton").onclick = function() {settingsMenu()};
         element[0].addEventListener('click', function (e) {
           activeVisibilitySlot++;
           if (activeVisibilitySlot >= visibilitySlots.length) activeVisibilitySlot = 0;
@@ -112,58 +181,52 @@ angular.module('beamng.apps')
             'background-color': 'rgba(50, 50, 50, ' + visibilitySlots[activeVisibilitySlot] + ')',
           })
         });
-        function sleep(ms) {
-          return new Promise(resolve => setTimeout(resolve, ms));
-        }
         element[0].addEventListener('contextmenu', function(e) {
-          console.log("old map zoom: " + mapZoom)
           var oldZoomSlot = zoomSlot;
           zoomSlot++;
           mapZoomSlot = zoomSlot < zoomStates.length ? zoomSlot : zoomSlot = 0;
-          async function animatedZoom() {
-            var mapZoomSpeed = baseMapZoomSpeed*(zoomStates[mapZoomSlot]-zoomStates[oldZoomSlot])/zoomStates[baseZoomLevel]
-            console.log("mapZoomSpeed: " + mapZoomSpeed)
-            var i = 0
-            while (mapZoom != zoomStates[mapZoomSlot]) {
-              i++
-              if (i > 1000) {
-                mapZoom = zoomStates[mapZoomSlot] // makes sure it doesnt get stuck in an infinite loop
-                console.error("the animated zoom has caused an error, it has repeated over 1000 times, this is not normal")
-                break;
+          if (config[0] == 'true') {
+            async function animatedZoom() {
+              var mapZoomSpeed = baseMapZoomSpeed*(zoomStates[mapZoomSlot]-zoomStates[oldZoomSlot])/zoomStates[baseZoomLevel]
+              var i = 0
+              while (mapZoom != zoomStates[mapZoomSlot]) {
+                i++
+                if (i > 1000) {
+                  mapZoom = zoomStates[mapZoomSlot] // makes sure it doesnt get stuck in an infinite loop
+                  console.error("the animated zoom has caused an error, it has repeated over 1000 times, this is not normal")
+                  break;
+                } else if (mapZoom > zoomStates[0]) {
+                  mapZoom = zoomStates[mapZoomSlot] // resets to how it should be
+                  console.error("the animated zoom has caused an error, it has gone over the zoom limit, this is not normal")
+                  break;
+                } else if (mapZoom < zoomStates[zoomStates.length - 1]) {
+                  mapZoom = zoomStates[mapZoomSlot] // resets to how it should be
+                  console.error("the animated zoom has caused an error, it has gone under the zoom limit, this is not normal")
+                  break;
+                } else {
+                  mapZoom = mapZoom - mapZoomSpeed
+                  await sleep(15);
+                }
               }
-              if (mapZoom > zoomStates[0]) {
-                mapZoom = zoomStates[mapZoomSlot] // resets to how it should be
-                console.error("the animated zoom has caused an error, it has gone over the zoom limit, this is not normal")
-                break;
-              }
-              if (mapZoom < zoomStates[zoomStates.length - 1]) {
-                mapZoom = zoomStates[mapZoomSlot] // resets to how it should be
-                console.error("the animated zoom has caused an error, it has gone under` the zoom limit, this is not normal")
-                break;
-              }
-              mapZoom = mapZoom - mapZoomSpeed
-              await sleep(15);
             }
-            console.log("Returned: " + mapZoom)
-            console.log("Expected: " + zoomStates[mapZoomSlot])
-            console.log("Calculated: " + mapZoomSpeed)
+            animatedZoom();
+          } else {
+            mapZoom = zoomStates[mapZoomSlot]
           }
-          animatedZoom();
         });
-
         scope.$on('NavigationMapUpdate', function (event, data) {
           if (!mapReady || !data) return;
           updateNavMap(data);
-
           // center map on thing that is controlled
           centerMap(data.objects[data.controlID]);
         });
-
         scope.$on('app:resized', function (event, streams) {
           element.css({
             'width': streams.width-25 + "px",
             'height': streams.height-25 + "px",
           })
+          settingsCanvas.width = streams.width-25
+          settingsCanvas.height = streams.height-25
           setupMap();
         });
 
@@ -359,27 +422,30 @@ angular.module('beamng.apps')
         }
 
         function centerMap(obj) {
-          var speedZoomMultiplier = 2;
-          var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200); // speed tied zoom
+            var speedZoomMultiplier = 2;
+            var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200); // speed tied zoom
 
-          // center on what?
-          var focusX = -obj.pos[0] / mapScale;
-          var focusY = obj.pos[1] / mapScale;
+            // center on what?
+            var focusX = -obj.pos[0] / mapScale;
+            var focusY = obj.pos[1] / mapScale;
 
-          var borderWidth = root.children[0].clientWidth;
-          var borderHeight = root.children[0].clientHeight;
-          var degreeNorth = rotateMap ? (obj.rot - 90) : 90;
-          var npx = - Math.cos(degreeNorth * Math.PI / 180) * borderWidth * 0.75;
-          var npy = borderHeight * 0.5 - Math.sin(degreeNorth * Math.PI / 180) * borderHeight * 0.75;
-          var translateX = (((viewParams[0]) + borderWidth/2 - 10) + focusX + 10);
-          var translateY = (((viewParams[1]) + borderHeight/1.5) + focusY + (zoom / 2)); // translate map with speed
+            var borderWidth = root.children[0].clientWidth;
+            var borderHeight = root.children[0].clientHeight;
+            var degreeNorth = rotateMap ? (obj.rot - 90) : 90;
+            var npx = - Math.cos(degreeNorth * Math.PI / 180) * borderWidth * 0.75;
+            var npy = borderHeight * 0.5 - Math.sin(degreeNorth * Math.PI / 180) * borderHeight * 0.75;
+            var translateX = (((viewParams[0]) + borderWidth/2 - 10) + focusX + 10);
+            var translateY = (((viewParams[1]) + borderHeight/1.5) + focusY + (zoom / 2)); // translate map with speed
+          // is settings menu open?
+          if(settingsIsOpen == false) {
 
-          mapcontainer.style.transformOrigin = (((viewParams[0] * -1)) - focusX) + "px " + ((viewParams[1] * -1) - focusY) + "px"
-          mapcontainer.style.transform = "translate3d(" + translateX + "px, " + translateY + "px," + (mapZoom - (zoom * speedZoomMultiplier)) + "px)" + "rotateX(" + 0 + (zoom / 10) + "deg)" + "rotateZ(" + (180 + Utils.roundDec(obj.rot, 2)) + "deg)"
+            mapcontainer.style.transformOrigin = (((viewParams[0] * -1)) - focusX) + "px " + ((viewParams[1] * -1) - focusY) + "px"
+            mapcontainer.style.transform = "translate3d(" + translateX + "px, " + translateY + "px," + (mapZoom - (zoom * speedZoomMultiplier)) + "px)" + "rotateX(" + 0 + (zoom / 10) + "deg)" + "rotateZ(" + (180 + Utils.roundDec(obj.rot, 2)) + "deg)"
 
-          northPointer.style.transform = 'translate(' + Math.min(Math.max(npx, -borderWidth / 2 - 2), borderWidth / 2) + 'px,' + Math.min(Math.max(npy, 0), borderHeight) + 'px)';
-
-
+            northPointer.style.transform = 'translate(' + Math.min(Math.max(npx, -borderWidth / 2 - 2), borderWidth / 2) + 'px,' + Math.min(Math.max(npy, 0), borderHeight) + 'px)';
+          } else {
+            northPointer.style.transform = 'translate(' + borderWidth/2.5 + 'px, ' + borderHeight/2.5 + 'px)';
+          }
         }
 
         // no cheating :D
@@ -395,68 +461,79 @@ angular.module('beamng.apps')
         function updatePlayerShape(key, data) {
           //console.log('updatePlayerShape', key)
           if (vehicleShapes[key]) vehicleShapes[key].remove();
-          var isControlled = (key == data.controlID);
-          //console.log(data)
-          var obj = data.objects[key];
+          // is settings menu open?
+          if(settingsIsOpen == false) {
+            var isControlled = (key == data.controlID);
+            //console.log(data)
+            var obj = data.objects[key];
 
-          if (isControlled) {
-            //console.log(obj.type);
-            if (obj.type == 'Camera') {
-              hideCollectables(true);
+            if (isControlled) {
+              //console.log(obj.type);
+              if (obj.type == 'Camera') {
+                hideCollectables(true);
+                vehicleShapes[key] = hu('<circle>', svg);
+                vehicleShapes[key].attr('cx', 0);
+                vehicleShapes[key].attr('cy', 0);
+                vehicleShapes[key].attr('r', 8);
+                vehicleShapes[key].css('fill', '#FD6A00');
+              }
+              else {
+                hideCollectables(false);
+                vehicleShapes[key] = hu('<use>', svg);
+                vehicleShapes[key].attr({ 'xlink:href': '#vehicleMarker' });
+              }
+            }
+            else {
               vehicleShapes[key] = hu('<circle>', svg);
               vehicleShapes[key].attr('cx', 0);
               vehicleShapes[key].attr('cy', 0);
-              vehicleShapes[key].attr('r', 8);
-              vehicleShapes[key].css('fill', '#FD6A00');
+              vehicleShapes[key].attr('r', 10);
+              vehicleShapes[key].css('stroke', '#FFFFFF');
+              vehicleShapes[key].css('stroke-width', '3px');
+              vehicleShapes[key].css('fill', '#A3D39C');
             }
-            else {
-              hideCollectables(false);
-              vehicleShapes[key] = hu('<use>', svg);
-              vehicleShapes[key].attr({ 'xlink:href': '#vehicleMarker' });
-            }
-          }
-          else {
-            vehicleShapes[key] = hu('<circle>', svg);
-            vehicleShapes[key].attr('cx', 0);
-            vehicleShapes[key].attr('cy', 0);
-            vehicleShapes[key].attr('r', 10);
-            vehicleShapes[key].css('stroke', '#FFFFFF');
-            vehicleShapes[key].css('stroke-width', '3px');
-            vehicleShapes[key].css('fill', '#A3D39C');
           }
         }
 
         function updateNavMap(data) {
-          // player changed? update shapes?
-          if (lastcontrolID != data.controlID) {
-            if (lastcontrolID != -1) updatePlayerShape(lastcontrolID, data); // update shape of old vehicle
-            updatePlayerShape(data.controlID, data); // update shape of new vehicle
-            lastcontrolID = data.controlID;
-          }
-          // update shape positions
-          for (var key in data.objects) {
-            var o = data.objects[key];
+          // is settings menu open?
+          if(settingsIsOpen == false) {
+            // player changed? update shapes?
+            if (lastcontrolID != data.controlID) {
+              if (lastcontrolID != -1) updatePlayerShape(lastcontrolID, data); // update shape of old vehicle
+              updatePlayerShape(data.controlID, data); // update shape of new vehicle
+              lastcontrolID = data.controlID;
+            }
+            // update shape positions
+            for (var key in data.objects) {
+              var o = data.objects[key];
 
-            if (vehicleShapes[key]) {
-              var px = -o.pos[0] / mapScale;
-              var py = o.pos[1] / mapScale;
-              var rot = Math.floor(-o.rot);
-              var iconScale = Math.max(1, 1 + mapZoom / -500 * 0.151);
-              var show = 1;
-              if (o.marker == null) {
-                o.marker = 'default';
+              if (vehicleShapes[key]) {
+                var px = -o.pos[0] / mapScale;
+                var py = o.pos[1] / mapScale;
+                var rot = Math.floor(-o.rot);
+                var iconScale = Math.max(1, 1 + mapZoom / -500 * 0.151);
+                var show = 1;
+                if (o.marker == null) {
+                  o.marker = 'default';
+                }
+                if (o.marker == 'hidden') {
+                  show = 0;
+                }
+                vehicleShapes[key].attr({"transform": "translate(" + px + "," + py + ") scale(" + iconScale + "," + iconScale + ") rotate(" + rot + ")", "opacity": show});
               }
-              if (o.marker == 'hidden') {
-                show = 0;
+              else {
+                updatePlayerShape(key, data);
               }
-              vehicleShapes[key].attr({"transform": "translate(" + px + "," + py + ") scale(" + iconScale + "," + iconScale + ") rotate(" + rot + ")", "opacity": show});
             }
-            else {
-              updatePlayerShape(key, data);
+            // zoom magnification display
+            if (config[1] == 'true') {
+              document.getElementById('zoomDisplay').style.visibility = "visible";
+              scope.zoomMag = zoomMags[zoomSlot] + "x zoom"
+            } else {
+              document.getElementById('zoomDisplay').style.visibility = "hidden";
             }
           }
-          // zoom magnification display
-          scope.zoomMag = zoomMags[zoomSlot] + "x zoom"
           // delete missing vehicles
           for (var key in vehicleShapes) {
             if (!data.objects[key]) {
