@@ -52,6 +52,13 @@ angular.module('beamng.apps')
             cursor: pointer;
           }
         </style>
+        <style>
+          .checkbox {
+            color: white;
+            font-size: 20px;
+            font-family: Tahoma, sans-serif;
+          }
+        </style>
         <!-- Zoom Display -->
         <div id="zoomDisplay" style="font-size: 1.2em; padding: 0.2%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; bottom:0px; left:0px">
           {{ zoomMag }}
@@ -64,6 +71,12 @@ angular.module('beamng.apps')
           <button id="settingsMenuButton" class="button">
             ⚙
           </button>
+        </div>
+        <div id="checkboxes">
+          <label for="navMapSmoothZoom" style="position: absolute; top:46px; left:30px;" class="checkbox">Smooth Zoom</label>
+          <input type="checkbox" id="navMapSmoothZoom" style="position: absolute; top:50px; left:10px;"></input>
+          <label for="navMapDisplayZoom" style="position: absolute; top:76px; left:30px;" class="checkbox">Display Zoom</label>
+          <input type="checkbox" id="navMapDisplayZoom" style="position: absolute; top:80px; left:10px;"></input>
         </div>
         <!-- Collectible Display -->
         <div ng-if="collectableTotal > 0" style="font-size: 1.2em; padding: 1%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; top:15px; left: 15px">
@@ -97,6 +110,8 @@ angular.module('beamng.apps')
         var routeCanvas = document.getElementById('routeCanvas');
         var routeCanvasWrapper = document.getElementById('routeCanvasWrapper');
 
+        var settingsCheckBoxes = document.getElementById('checkboxes');
+
         var pointer = mapcontainer.children[1];
         var northPointer = root.children[0].children[1].children[0];
 
@@ -105,19 +120,28 @@ angular.module('beamng.apps')
         var viewParams = [];
 
         var red = true;
+
+        // make sure checkboxes are not visible
+        settingsCheckBoxes.style.visibility = "hidden";
         
         // load settings
         var config = [];
         var configDefaults = [true, true];
-        var configKeys = ['navMapSmoothZoom', 'navMapSmoothZoom'];
+        var configKeys = ['navMapSmoothZoom', 'navMapDisplayZoom'];
         for(i=0;configKeys.length>i;i++){
           config[i] = localStorage.getItem(configKeys[i]);
           if(!config[i]) { // if the setting does not exist, then create it
             localStorage.setItem(configKeys[i], configDefaults[i]);
             config[i] = localStorage.getItem(configKeys[i]);
           }
+          if(config[i] == "true") {
+            document.getElementById(configKeys[i]).checked = true
+          } else {
+            document.getElementById(configKeys[i]).checked = false
+          }
+          console.log([i] + " | " + config[i])
         }
-
+        
         var baseMapZoomSpeed = 25;
         var mapZoom = -500;
         var mapScale = 1
@@ -162,14 +186,19 @@ angular.module('beamng.apps')
           })
           var ctx = settingsCanvas.getContext('2d');
           if(settingsIsOpen == false) {
+            // Draw Background
             ctx.fillStyle = "rgba(50, 50, 50, 1)";
             ctx.fillRect(0, 0, settingsCanvas.width, settingsCanvas.height);
+            // Draw Title
             ctx.font = "28px Tahoma, sans-serif";
             ctx.fillStyle = "white";
             ctx.fillText("Navigation Settings", 10, 30)
+            // Draw Checkboxes
+            settingsCheckBoxes.style.visibility = "visible";
             settingsIsOpen = true;
           } else {
             ctx.clearRect(0, 0, settingsCanvas.width, settingsCanvas.height)
+            settingsCheckBoxes.style.visibility = "hidden";
             settingsIsOpen = false;
           }
         }
@@ -532,6 +561,21 @@ angular.module('beamng.apps')
               scope.zoomMag = zoomMags[zoomSlot] + "x zoom"
             } else {
               document.getElementById('zoomDisplay').style.visibility = "hidden";
+            }
+          } else {
+            for(i=0;configKeys.length>i;i++){
+              if(document.getElementById(configKeys[i]).checked == true) {
+                if(config[i] != 'true') {
+                  config[i] = 'true'
+                  localStorage.setItem(configKeys[i], 'true');
+                  print("true")
+                }
+              } else {
+                if(config[i] != 'false') {
+                  config[i] = 'false'
+                  localStorage.setItem(configKeys[i], 'false');
+                }
+              }
             }
           }
           // delete missing vehicles
