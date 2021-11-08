@@ -569,11 +569,23 @@ angular.module('beamng.apps')
                   config[i] = 'true'
                   localStorage.setItem(configKeys[i], 'true');
                   print("true")
+                  // make sure not to change visiblity slot
+                  activeVisibilitySlot--;
+                  if (activeVisibilitySlot < 0) activeVisibilitySlot = 3;
+                  element.css({
+                    'background-color': 'rgba(50, 50, 50, ' + visibilitySlots[activeVisibilitySlot] + ')',
+                  })
                 }
               } else {
                 if(config[i] != 'false') {
                   config[i] = 'false'
                   localStorage.setItem(configKeys[i], 'false');
+                  // make sure not to change visiblity slot
+                  activeVisibilitySlot--;
+                  if (activeVisibilitySlot < 0) activeVisibilitySlot = 3;
+                  element.css({
+                    'background-color': 'rgba(50, 50, 50, ' + visibilitySlots[activeVisibilitySlot] + ')',
+                  })
                 }
               }
             }
@@ -586,7 +598,6 @@ angular.module('beamng.apps')
             }
           }
         }
-
         function setupMap(data) {
           if(canvas == null) {
             //console.error('setupMap called before element is ready');
