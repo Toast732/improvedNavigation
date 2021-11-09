@@ -21,3 +21,10 @@ Alpha Features (not yet in the beta version on the forums):
 
 Video of the mod:
 https://www.youtube.com/watch?v=H5UTOlVwXvA
+
+How install this version:
+
+- Download the zip
+- Extract the mod
+- go in two folders, and move improvedNavigation to %localappdata%/0.23/mods/unpacked/
+- enable the mod in game, may require you to relaunch the game to see it in the mod list
