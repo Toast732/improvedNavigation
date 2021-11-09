@@ -155,6 +155,7 @@ angular.module('beamng.apps')
         }
         
         var baseMapZoomSpeed = 25;
+        var mapZoomSpeed = 0;
         var mapScale = 1
         var routeScale = 1/3;
         var zoomStates = [1000, 500, 0, -500, -1000, -2000, -4000, -8000, -16000] // the magnification levels
@@ -224,12 +225,12 @@ angular.module('beamng.apps')
           })
         });
         element[0].addEventListener('contextmenu', function(e) {
-          var oldZoomSlot = zoomSlot;
           zoomSlot++;
           mapZoomSlot = zoomSlot < zoomStates.length ? zoomSlot : zoomSlot = 0;
           if (config[0] == 'true') {
             async function animatedZoom() {
-              var mapZoomSpeed = baseMapZoomSpeed*(zoomStates[mapZoomSlot]-zoomStates[oldZoomSlot])/zoomStates[baseZoomLevel]
+              mapZoomSpeed = Math.ceil(baseMapZoomSpeed*(zoomStates[mapZoomSlot]-mapZoom)/zoomStates[baseZoomLevel])
+              if (mapZoom > zoomStates[mapZoomSlot] )
               var i = 0
               while (mapZoom != zoomStates[mapZoomSlot]) {
                 i++
@@ -242,11 +243,22 @@ angular.module('beamng.apps')
                   console.error("the animated zoom has caused an error, it has gone over the zoom limit, this is not normal")
                   break;
                 } else if (mapZoom < zoomStates[zoomStates.length - 1]) {
-                  mapZoom = zoomStates[mapZoomSlot] // resets to how it should be
+                  mapZoom = zoomStates[zoomStates.length - 1] // resets to how it should be
                   console.error("the animated zoom has caused an error, it has gone under the zoom limit, this is not normal")
                   break;
                 } else {
                   mapZoom = mapZoom - mapZoomSpeed
+                  if (mapZoomSpeed < 0) {
+                    if (mapZoom + 20 >= zoomStates[mapZoomSlot]) {
+                      mapZoom = zoomStates[mapZoomSlot];
+                      break;
+                    }
+                  } else {
+                    if (mapZoom - 20 <= zoomStates[mapZoomSlot]) {
+                      mapZoom = zoomStates[mapZoomSlot];
+                      break;
+                    }
+                  }
                   await sleep(15);
                 }
               }
@@ -256,7 +268,6 @@ angular.module('beamng.apps')
             }
             animatedZoom();
           } else {
-            mapZoom = zoomStates[mapZoomSlot]
             if(config[3] == 'true') {
               setupMap(navMapData);
             }
