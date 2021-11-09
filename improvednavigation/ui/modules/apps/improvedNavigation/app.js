@@ -85,6 +85,8 @@ angular.module('beamng.apps')
           <input type="checkbox" id="navMapNorthLocked" style="position: absolute; top:170px; left:10px;"></input>
           <label for="navMapShowGrid" style="position: absolute; top:196px; left:30px;" class="checkbox">Show Grid</label>
           <input type="checkbox" id="navMapShowGrid" style="position: absolute; top:200px; left:10px;"></input>
+          <label for="navMapShowOffScreenVehicles" hidden style="position: absolute; top:226px; left:30px;" class="checkbox">Show Offscreen Vehicles</label>
+          <input type="checkbox" id="navMapShowOffScreenVehicles" hidden style="position: absolute; top:230px; left:10px;"></input>
         </div>
         <!-- Collectible Display -->
         <div ng-if="collectableTotal > 0" style="font-size: 1.2em; padding: 1%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; top:15px; left: 15px">
@@ -136,8 +138,8 @@ angular.module('beamng.apps')
         
         // load settings
         var config = [];
-        var configDefaults = [true, true, true, true, false, true];
-        var configKeys = ['navMapSmoothZoom', 'navMapDisplayZoom', 'navMapSpeedTiedZoom', 'ElementScaleTiedZoom', 'navMapNorthLocked', 'navMapShowGrid'];
+        var configDefaults = [true, true, true, true, false, true, true];
+        var configKeys = ['navMapSmoothZoom', 'navMapDisplayZoom', 'navMapSpeedTiedZoom', 'ElementScaleTiedZoom', 'navMapNorthLocked', 'navMapShowGrid', 'navMapShowOffScreenVehicles'];
         for(i=0;configKeys.length>i;i++){
           config[i] = localStorage.getItem(configKeys[i]);
           if(!config[i]) { // if the setting does not exist, then create it
@@ -153,11 +155,10 @@ angular.module('beamng.apps')
         }
         
         var baseMapZoomSpeed = 25;
-        var mapZoom = -500;
         var mapScale = 1
         var routeScale = 1/3;
         var zoomStates = [1000, 500, 0, -500, -1000, -2000, -4000, -8000, -16000] // the magnification levels
-        var roadScaleZoom = [1, 1, 1, 1, 1, 1.3, 1.8, 2.8, 4.8]
+        var roadScaleZoom = [0, 0, 0, 0, 0, 0.0385, 0.1, 0.225, 0.475]
         var zoomMags = []
         var settingsIsOpen = false
         // Calculates the magnification levels to display in the gui, This allows for the magnification levels to automatically change if you were to add or remove more magnification levels (zoomStates)
@@ -170,6 +171,7 @@ angular.module('beamng.apps')
           }
         }
         var zoomSlot = baseZoomLevel;
+        var mapZoom = zoomStates[baseZoomLevel];
         var t = 0;
         // receive live data from the GE map
         var vehicleShapes = {};
@@ -469,30 +471,30 @@ angular.module('beamng.apps')
         }
 
         function centerMap(obj) {
-            var speedZoomMultiplier = 2;
-            if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
-              var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200); // speed tied zoom
-            } else {
-              var zoom = 0;
-            }
-            
+          var speedZoomMultiplier = 2;
+          if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
+            var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200); // speed tied zoom
+          } else {
+            var zoom = 0;
+          }
+          
 
-            // center on what?
-            var focusX = -obj.pos[0] / mapScale;
-            var focusY = obj.pos[1] / mapScale;
+          // center on what?
+          var focusX = -obj.pos[0] / mapScale;
+          var focusY = obj.pos[1] / mapScale;
 
-            var borderWidth = root.children[0].clientWidth;
-            var borderHeight = root.children[0].clientHeight;
-            if (config[4] == 'false') { // if lock north is disabled
-              var degreeNorth = obj.rot - 90;
-            } else {
-              var degreeNorth = 0;
-            }
-            var degreeNorth = config[4] == 'false' ? (obj.rot - 90) : 90;
-            var npx = - Math.cos(degreeNorth * Math.PI / 180) * borderWidth * 0.75;
-            var npy = borderHeight * 0.5 - Math.sin(degreeNorth * Math.PI / 180) * borderHeight * 0.75;
-            var translateX = (((viewParams[0]) + borderWidth/2 - 10) + focusX + 10);
-            var translateY = (((viewParams[1]) + borderHeight/1.5) + focusY + (zoom / 2)); // translate map with speed
+          var borderWidth = root.children[0].clientWidth;
+          var borderHeight = root.children[0].clientHeight;
+          if (config[4] == 'false') { // if lock north is disabled
+            var degreeNorth = obj.rot - 90;
+          } else {
+            var degreeNorth = 0;
+          }
+          var degreeNorth = config[4] == 'false' ? (obj.rot - 90) : 90;
+          var npx = - Math.cos(degreeNorth * Math.PI / 180) * borderWidth * 0.75;
+          var npy = borderHeight * 0.5 - Math.sin(degreeNorth * Math.PI / 180) * borderHeight * 0.75;
+          var translateX = (((viewParams[0]) + borderWidth/2 - 10) + focusX + 10);
+          var translateY = (((viewParams[1]) + borderHeight/1.5) + focusY + (zoom / 2)); // translate map with speed
           // is settings menu open?
           if(settingsIsOpen == false) {
 
@@ -568,7 +570,7 @@ angular.module('beamng.apps')
             // update shape positions
             for (var key in data.objects) {
               var o = data.objects[key];
-
+              var p = data.objects[data.controlID];
               if (vehicleShapes[key]) {
                 var px = -o.pos[0] / mapScale;
                 var py = o.pos[1] / mapScale;
@@ -578,13 +580,81 @@ angular.module('beamng.apps')
                 } else {
                   var iconScale = 1;
                 }
-                
                 var show = 1;
                 if (o.marker == null) {
                   o.marker = 'default';
                 }
                 if (o.marker == 'hidden') {
                   show = 0;
+                }
+                if(config[6] == 'true') {
+                  if(o != p) {
+                    //attempts to get the offscreen vehicles to work
+
+                    //px = ;
+                    //py = p.pos[1]/mapScale)/3;
+                    //console.log("px: " + px + " py: " + py);
+                    /*
+                    var borderWidth = root.children[0].clientWidth;
+                    var borderHeight = root.children[0].clientHeight;
+                    */
+                    /*
+                    var distX = (-o.pos[0] - -p.pos[0]) / mapScale;
+                    var distY = (o.pos[1] - p.pos[1]) / mapScale;
+                    console.log("DistX: " + distX + " oposx: " + -o.pos[0] + " pposx " + -p.pos[0]);
+                    console.log("px: " + px)
+                    console.log("DistY: " + distY + " oposy: " + o.pos[1] + " pposy " + p.pos[1]);
+                    console.log("py: " + py)
+                    */
+                   /*
+                    var vehMar = root.children[0]; 
+                    var bounding = vehMar.getBoundingClientRect();
+                    var over = {};
+                    over.t = bounding.top / mapScale + 3.5;
+                    over.r = bounding.right / mapScale;
+                    over.b = bounding.bottom / mapScale;
+                    over.l = bounding.left / mapScale;
+                    console.log('Bounding Top: ' + over.t);
+                    console.log('Bounding Right: ' + over.r);
+                    console.log('Bounding Bottom: ' + over.b);
+                    console.log('Bounding Left: ' + over.l);
+                    console.log('oposy: ' + o.pos[1] / mapScale)
+
+                    if (o.pos[1] / mapScale < over.t) {
+                      py = Math.abs((over.t - (p.pos[1] / mapScale)) / 2);
+                      console.log("top overflow! " + py)
+                    }
+                    if (o.pos[1] / mapScale > over.b) {
+                      py = over.b + -py 
+                      console.log("bottom overflow! " + py)
+                    }
+                    if (-o.pos[0] / mapScale > over.r) {
+                      px = px
+                      console.log("right overflow! " + px)
+                    }
+                    if (-o.pos[0] / mapScale < over.l) {
+                      px = over.l + -px
+                      console.log("left overflow! " + px)
+                    }
+                    */
+                   /*
+                    console.log("px: " + px)
+                    console.log("ppos: " + p.pos[0] / mapScale)
+                    //console.log("mapScale: " + mapScale)
+                    if((borderWidth - 65) - (-p.pos[0] / mapScale) < px) {
+                      if(Math.abs(p.pos[0]) > px) {
+                        px = (-p.pos[0] / mapScale) - (borderWidth - 65) + px * 2;
+                      } else {
+                        px = (-p.pos[0] / mapScale) - (borderWidth - -60) + px * 2;
+                      }
+                    } 
+                    if((borderHeight - 25) - (p.pos[1] / mapScale) < py) {
+                      py = (p.pos[1] / mapScale) - (borderHeight - 25) + py * 2;
+                      //console.log("no")
+                    }
+                    console.log("npx: " + px)
+                    */
+                  }
                 }
                 vehicleShapes[key].attr({"transform": "translate(" + px + "," + py + ") scale(" + iconScale + "," + iconScale + ") rotate(" + rot + ")", "opacity": show});
               }
@@ -745,12 +815,12 @@ angular.module('beamng.apps')
               var distX = maxX - minX
               var dx = 50
               for (var x = minX; x <= maxX * dx + 1; x += dx) {
-                _createLine({ x: x, y: minY * dx, radius: 0.7 + 1 / mapScale * roadScaleZoom[zoomSlot]}, { x: x, y: maxY * dx, radius: 0.7 + 1 / mapScale * roadScaleZoom[zoomSlot]}, '#FFFFFF55');
+                _createLine({ x: x, y: minY * dx, radius: 0.7 + 1 / mapScale * (roadScaleZoom[zoomSlot] * mapScale + 1)}, { x: x, y: maxY * dx, radius: 0.7 + 1 / mapScale * (roadScaleZoom[zoomSlot] * mapScale + 1)}, '#FFFFFF55');
               }
               var distY = maxY - minY
               var dy = 50
               for (var y = minY; y <= maxY * dy + 1; y += dy) {
-                _createLine({ x: minX * dy, y: y, radius: 0.7 + 1 / mapScale * roadScaleZoom[zoomSlot]}, { x: maxX * dy, y: y, radius: 0.7 + 1 / mapScale * roadScaleZoom[zoomSlot]}, '#FFFFFF55');
+                _createLine({ x: minX * dy, y: y, radius: 0.7 + 1 / mapScale * (roadScaleZoom[zoomSlot] * mapScale + 1)}, { x: maxX * dy, y: y, radius: 0.7 + 1 / mapScale * (roadScaleZoom[zoomSlot] * mapScale + 1)}, '#FFFFFF55');
               }
             }
 
@@ -775,14 +845,13 @@ angular.module('beamng.apps')
                       _createLine({
                         x: -el.pos[0] / mapScale + viewParams[2],
                         y: el.pos[1] / mapScale + viewParams[3],
-                        radius: Math.min(Math.max(el.radius, 0), 5) * 3 / mapScale * roadScaleZoom[zoomSlot]
+                        radius: Math.min(Math.max(el.radius, 0), 5) * 3 / mapScale * (roadScaleZoom[zoomSlot] * mapScale + 1)
                       }, {
                           x: -el2.pos[0] / mapScale + viewParams[2],
                           y: el2.pos[1] / mapScale + viewParams[3],
-                          radius: Math.min(Math.max(el2.radius, 0), 5) * 3 / mapScale * roadScaleZoom[zoomSlot] // prevents massive blobs due to waypoints having larger radius'
+                          radius: Math.min(Math.max(el2.radius, 0), 5) * 3 / mapScale * (roadScaleZoom[zoomSlot] * mapScale + 1) // prevents massive blobs due to waypoints having larger radius'
                         }, getDrivabilityColor(drivability)
                       );
-                      console.log(roadScaleZoom[zoomSlot])
                     }
                   }
                 }
