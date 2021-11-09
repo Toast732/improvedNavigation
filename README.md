@@ -12,6 +12,7 @@ Features:
 - Much higher and lower zoom magnification levels (0.1.1)
 - Settings menu to toggle features (0.2)
 - Saving settings (0.2)
+
 Alpha Features (not yet in the beta version on the forums):
 - Lock North (0.2.1)
 - Toggle Grid (0.2.1)
