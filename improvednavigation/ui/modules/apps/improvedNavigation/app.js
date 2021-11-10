@@ -130,7 +130,7 @@ angular.module('beamng.apps')
         var viewParams = [];
 
         var navMapData = null;
-
+        var bgImage = null;
         var red = true;
 
         // make sure checkboxes are not visible
@@ -811,7 +811,10 @@ angular.module('beamng.apps')
             if (data.minimapImage && data.terrainOffset && data.terrainSize) {
               // mapcontainer.style.backgroundSize = "100%"
               // mapcontainer.style.backgroundImage = "url('/" + data.minimapImage + "')"
-              var bgImage = hu('<image>', svg).attr({
+              if (bgImage != null) {
+                bgImage.remove()
+              }
+              bgImage = hu('<image>', svg).attr({
                 'x': data.terrainOffset[0] / mapScale,
                 'y': data.terrainOffset[1] / mapScale,
                 'width': data.terrainSize[0] / mapScale,
