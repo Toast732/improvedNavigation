@@ -59,6 +59,13 @@ angular.module('beamng.apps')
             font-family: Tahoma, sans-serif;
           }
         </style>
+        <style>
+          .checkboxlist {
+            height: 100px;
+            width: 4096px;
+            overflow-y:auto;
+          }
+        </style>
         <!-- Zoom Display -->
         <div id="zoomDisplay" style="font-size: 1.2em; padding: 0.2%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; bottom:0px; left:0px">
           {{ zoomMag }}
@@ -76,21 +83,23 @@ angular.module('beamng.apps')
             ⚙
           </button>
         </div>
-        <div id="checkboxes">
-          <label for="navMapSmoothZoom" style="position: absolute; top:46px; left:30px;" class="checkbox">Smooth Zoom</label>
-          <input type="checkbox" id="navMapSmoothZoom" style="position: absolute; top:50px; left:10px;"></input>
-          <label for="navMapDisplayZoom" style="position: absolute; top:76px; left:30px;" class="checkbox">Display Zoom Level</label>
-          <input type="checkbox" id="navMapDisplayZoom" style="position: absolute; top:80px; left:10px;"></input>
-          <label for="navMapSpeedTiedZoom" style="position: absolute; top:106px; left:30px;" class="checkbox">Speed Tied Zoom</label>
-          <input type="checkbox" id="navMapSpeedTiedZoom" style="position: absolute; top:110px; left:10px;"></input>
-          <label for="navMapElementScaleTiedZoom" style="position: absolute; top:136px; left:30px;" class="checkbox">Scale Map Elements with Zoom</label>
-          <input type="checkbox" id="ElementScaleTiedZoom" style="position: absolute; top:140px; left:10px;"></input>
-          <label for="navMapNorthLocked" style="position: absolute; top:166px; left:30px;" class="checkbox">Lock North</label>
-          <input type="checkbox" id="navMapNorthLocked" style="position: absolute; top:170px; left:10px;"></input>
-          <label for="navMapShowGrid" style="position: absolute; top:196px; left:30px;" class="checkbox">Show Grid</label>
-          <input type="checkbox" id="navMapShowGrid" style="position: absolute; top:200px; left:10px;"></input>
-          <label for="navMapShowOffScreenVehicles" style="position: absolute; top:226px; left:30px;" class="checkbox">Show Offscreen Vehicles</label>
-          <input type="checkbox" id="navMapShowOffScreenVehicles" style="position: absolute; top:230px; left:10px;"></input>
+        <div id="checkboxes" class="checkboxlist">
+          <label for="navMapSmoothZoom" style="position: absolute; top:36px; left:30px;" class="checkbox">Smooth Zoom</label>
+          <input type="checkbox" id="navMapSmoothZoom" style="position: absolute; top:40px; left:10px;"></input>
+          <label for="navMapDisplayZoom" style="position: absolute; top:66px; left:30px;" class="checkbox">Display Zoom Level</label>
+          <input type="checkbox" id="navMapDisplayZoom" style="position: absolute; top:70px; left:10px;"></input>
+          <label for="navMapSpeedTiedZoom" style="position: absolute; top:96px; left:30px;" class="checkbox">Speed Tied Zoom</label>
+          <input type="checkbox" id="navMapSpeedTiedZoom" style="position: absolute; top:100px; left:10px;"></input>
+          <label for="navMapElementScaleTiedZoom" style="position: absolute; top:126px; left:30px;" class="checkbox">Scale Map Elements with Zoom</label>
+          <input type="checkbox" id="ElementScaleTiedZoom" style="position: absolute; top:130px; left:10px;"></input>
+          <label for="navMapNorthLocked" style="position: absolute; top:156px; left:30px;" class="checkbox">Lock North</label>
+          <input type="checkbox" id="navMapNorthLocked" style="position: absolute; top:160px; left:10px;"></input>
+          <label for="navMapShowGrid" style="position: absolute; top:186px; left:30px;" class="checkbox">Show Grid</label>
+          <input type="checkbox" id="navMapShowGrid" style="position: absolute; top:190px; left:10px;"></input>
+          <label for="navMapCentreOnPlayer" style="position: absolute; top:216px; left:30px;" class="checkbox">Centre On Player</label>
+          <input type="checkbox" id="navMapCentreOnPlayer" style="position: absolute; top:220px; left:10px;"></input>
+          <label for="navMapShowOffScreenVehicles" style="position: absolute; top:246px; left:50px;" class="checkbox">Show Offscreen Vehicles</label>
+          <input type="checkbox" id="navMapShowOffScreenVehicles" style="position: absolute; top:250px; left:30px;"></input>
         </div>
         <!-- Collectible Display -->
         <div ng-if="collectableTotal > 0" style="font-size: 1.2em; padding: 1%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; top:15px; left: 15px">
@@ -143,8 +152,8 @@ angular.module('beamng.apps')
         
         // load settings
         var config = [];
-        var configDefaults = [true, true, true, true, false, true, true];
-        var configKeys = ['navMapSmoothZoom', 'navMapDisplayZoom', 'navMapSpeedTiedZoom', 'ElementScaleTiedZoom', 'navMapNorthLocked', 'navMapShowGrid', 'navMapShowOffScreenVehicles'];
+        var configDefaults = [true, true, true, true, false, true, true, true];
+        var configKeys = ['navMapSmoothZoom', 'navMapDisplayZoom', 'navMapSpeedTiedZoom', 'ElementScaleTiedZoom', 'navMapNorthLocked', 'navMapShowGrid', 'navMapCentreOnPlayer', 'navMapShowOffScreenVehicles'];
         for(i=0;configKeys.length>i;i++){
           config[i] = localStorage.getItem(configKeys[i]);
           if(!config[i]) { // if the setting does not exist, then create it
@@ -152,9 +161,9 @@ angular.module('beamng.apps')
             config[i] = localStorage.getItem(configKeys[i]);
           }
           if(config[i] == "true") {
-            document.getElementById(configKeys[i]).checked = true
+            document.getElementById(configKeys[i]).checked = true;
           } else {
-            document.getElementById(configKeys[i]).checked = false
+            document.getElementById(configKeys[i]).checked = false;
           }
         }
         
@@ -215,7 +224,7 @@ angular.module('beamng.apps')
             // Draw Title
             ctx.font = "28px Tahoma, sans-serif";
             ctx.fillStyle = "white";
-            ctx.fillText("Navigation Settings", 10, 30)
+            ctx.fillText("Navigation Settings", 10, 28)
             // Draw Checkboxes
             settingsCheckBoxes.style.visibility = "visible";
             settingsIsOpen = true;
@@ -497,13 +506,11 @@ angular.module('beamng.apps')
           if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
             var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200); // speed tied zoom
           } else {
-            var zoom = 0;
+            var zoom = 0
           }
-          
-
           // center on what?
           var focusX = -obj.pos[0] / mapScale;
-          var focusY = obj.pos[1] / mapScale - 68;
+          var focusY = obj.pos[1] / mapScale;
 
           var borderWidth = root.children[0].clientWidth;
           var borderHeight = root.children[0].clientHeight;
@@ -511,11 +518,13 @@ angular.module('beamng.apps')
           var npx = - Math.cos(degreeNorth * Math.PI / 180) * borderWidth * 0.75;
           var npy = borderHeight * 0.5 - Math.sin(degreeNorth * Math.PI / 180) * borderHeight * 0.75;
           var translateX = (((viewParams[0]) + borderWidth/2 - 10) + focusX + 10);
-          var translateY = (((viewParams[1]) + borderHeight/1.5) + focusY + (zoom / 2)); // translate map with speed
-          // is settings menu open?
-          if(settingsIsOpen == false) {
+          if (config[6] == 'true') { // if centre on player is enabled
+            var translateY = (((viewParams[1]) + borderHeight/2) + focusY + (zoom / 2)); // translate map with speed
+          } else {
+            var translateY = (((viewParams[1]) + borderHeight/1.5) + focusY + (zoom / 2)); // translate map with speed
+          }
+          if(settingsIsOpen == false) { // is settings menu closed?
 
-            mapcontainer.style.transformOrigin = (((viewParams[0] * -1)) - focusX) + "px " + ((viewParams[1] * -1) - focusY) + "px"
             if(config[4] == 'false') { // if lock north is disabled
               mapcontainer.style.transform = "translate3d(" + translateX + "px, " + translateY + "px," + (mapZoom - (zoom * speedZoomMultiplier)) + "px)" + "rotateX(" + 0 + (zoom / 10) + "deg)" + "rotateZ(" + (180 + Utils.roundDec(obj.rot, 2)) + "deg)"
             } else {
@@ -523,7 +532,7 @@ angular.module('beamng.apps')
             }
 
             northPointer.style.transform = 'translate(' + Math.min(Math.max(npx, -borderWidth / 2 - 2), borderWidth / 2) + 'px,' + Math.min(Math.max(npy, 0), borderHeight) + 'px)';
-          } else {
+          } else { // hide north pointer
             northPointer.style.transform = 'translate(' + borderWidth/2.5 + 'px, ' + borderHeight/2.5 + 'px)';
           }
         }
@@ -604,141 +613,42 @@ angular.module('beamng.apps')
                 if (o.marker == 'hidden') {
                   show = 0;
                 }
-                if(config[6] == 'true') {
+                if(config[7] == 'true') { // if show offscreen vehicles is enabled
                   if(o != p) {
-                    var focusX = -p.pos[0] / mapScale;
-                    var focusY = p.pos[1] / mapScale;
-                    /*var degreeNorth = config[4] == 'false' ? (p.rot - 90) : 90;
-                    var npx = - (Math.cos(degreeNorth * Math.PI / 180) * borderWidth * 0.75);
-                    var npy = (borderHeight * 0.5 - Math.sin(degreeNorth * Math.PI / 180) * borderHeight * 0.75);
-                    if (xAxis) xAxis.remove();
-                    if (yAxis) yAxis.remove();
-                    xAxis = hu('<line>', svg);
-                    xAxis.attr('x1', -8000);
-                    xAxis.attr('x2', 8000);
-                    xAxis.attr('y1', -10);
-                    xAxis.attr('y2', 10);
-                    xAxis.css('stroke', '#FF3E30');
-                    yAxis = hu('<line>', svg);
-                    yAxis.attr('x1', -10);
-                    yAxis.attr('x2', 10);
-                    yAxis.attr('y1', -8000);
-                    yAxis.attr('y2', 8000);
-                    yAxis.css('stroke', '#FFFBB0');*/
-                    
-                    //attempts to get the offscreen vehicles to work
-
-                    //px = ;
-                    //py = p.pos[1]/mapScale)/3;
-                    //console.log("px: " + px + " py: " + py);
-                    //var borderWidth = root.children[0].clientWidth;
-                    //var borderHeight = root.children[0].clientHeight - 50;
-                    /*
-                    var distX = (-o.pos[0] - -p.pos[0]) / mapScale;
-                    var distY = (o.pos[1] - p.pos[1]) / mapScale;
-                    console.log("DistX: " + distX + " oposx: " + -o.pos[0] + " pposx " + -p.pos[0]);
-                    console.log("px: " + px)
-                    console.log("DistY: " + distY + " oposy: " + o.pos[1] + " pposy " + p.pos[1]);
-                    console.log("py: " + py)
-                    */
-                   /*
-                    over = {}
-                    over.t = p.pos[1] / mapScale + borderHeight;
-                    if (c1) c1.remove();
-                    c1 = hu('<circle>', svg);
-                    c1.attr('cx', Math.min(Math.max(npx, -borderWidth / 2 - 2), borderWidth / 2));
-                    c1.attr('cy', Math.min(Math.max(npy, 0), borderHeight));
-                    c1.attr('r', 10);
-                    c1.css('stroke', '#FFFFFF');
-                    c1.css('stroke-width', '3px');
-                    c1.css('fill', '#00FBFF');*/
-
                     var borderWidth = offScreenVehicleCanvas.width;
                     var borderHeight = offScreenVehicleCanvas.height;
-                    var angle = config[4] == 'false' ? (135 + p.rot - getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale)) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale);
-                    /*console.log("w: " + borderWidth)
-                    console.log("h: " + borderHeight)
-                    console.log("1 " + angle)
-                    console.log("ppos0" + -p.pos[0])
-                    console.log("ppos1" + p.pos[1])
-                    console.log("opos0" + -o.pos[0])
-                    console.log("opos1" + o.pos[1])*/
-                    console.log(" ")
-                    var npx = (-Math.cos(angle) * (borderWidth * 0.25));
-                    var npy = (((borderHeight * 0.5)) - Math.sin(angle) * (borderHeight * 0.25));
-                    var ofvx = Math.max(0, Math.min(borderWidth, ((-Math.cos(angle) * (borderWidth * 0.65)) + (borderWidth/2))));
-                    var ofvy = Math.max(0,Math.min(borderHeight, (((borderHeight * 0.5)) - Math.sin(angle) * (borderHeight * 0.65))));
-                    var ctx = offScreenVehicleCanvas.getContext('2d'); // osv = offScreenVehicle
-                    if(npy > borderHeight && Math.abs(npy) > ofvy ) {
-                    }
-                    var rnpx = (npx + borderWidth/2)
-                    var rnpy = npy
-                    console.warn("npx: " + npx)
-                    console.log("ofvx: " + ofvx)
-                    console.warn("npy: " + npy)
-                    console.log("ofvy: " + ofvy)
-                    console.log("real npx: " + rnpx + borderWidth/2)
-                    console.log("real npy: " + rnpy)
-                    /*console.log("ofvy: " + ofvy)
-                    console.log("npx: " + npx)
-                    console.log("foobary: " + (borderHeight - (Math.max(npy, 0))));*/
-                    //console.log("s1 " + npx)
-                    //console.log("s2 " + (-borderWidth / 2 - 2))
-                    //console.log("s3 " + (borderWidth / 2))
-
+                    var r = (borderWidth+borderHeight)/2;
+                    var angle = config[4] == 'false' ? (p.rot + getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale)) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale);
+                    var vpy = (r * Math.sin(Math.PI * 2 * angle / 360)) + borderHeight/2
+                    var vpx = (r * Math.cos(Math.PI * 2 * angle / 360)) + borderWidth/2
+                    var ctx = offScreenVehicleCanvas.getContext('2d');
                     // clear background
                     ctx.beginPath();
                     ctx.clearRect(0, 0, borderWidth, borderHeight);
                     ctx.fill();
                     ctx.closePath();
-
-                    // blue vehicle
-
-                    // draw white circle
-                    ctx.beginPath();
-                    ctx.arc(rnpx, rnpy, 10, 0, Math.PI * 2, false);
-                    ctx.fillStyle = 'rgba(255, 255, 255, 1)'; 
-                    ctx.fill();
-                    ctx.closePath();
-
-                    // draw blue circle
-                    ctx.beginPath();
-                    ctx.arc(rnpx, rnpy, 7, 0, Math.PI * 2, false);
-                    //ctx.fillStyle = 'rgba(163, 211, 156, 1)';
-                    ctx.fillStyle = 'rgba(21, 0, 255, 1)';
-                    ctx.fill();
-                    ctx.closePath();
-
                     // purple vehicle
 
                     // draw white circle
                     ctx.beginPath();
-                    ctx.arc(ofvx, ofvy, 10, 0, Math.PI * 2, false);
+                    ctx.arc(vpx, vpy, 10, 0, Math.PI * 2, false);
                     ctx.fillStyle = 'rgba(255, 255, 255, 1)'; 
                     ctx.fill();
                     ctx.closePath();
 
                     // draw purple circle
                     ctx.beginPath();
-                    ctx.arc(ofvx, ofvy, 7, 0, Math.PI * 2, false);
+                    ctx.arc(vpx, vpy, 7, 0, Math.PI * 2, false);
                     //ctx.fillStyle = 'rgba(163, 211, 156, 1)';
                     ctx.fillStyle = 'rgba(204, 0, 255, 1)';
                     ctx.fill();
                     ctx.closePath();
 
-                    // draw blue line
-                    ctx.beginPath();
-                    ctx.strokeStyle = 'rgba(21, 0, 255, 1)';
-                    ctx.moveTo(borderWidth/2, (borderHeight/2 - 1));
-                    ctx.lineTo(rnpx, rnpy);
-                    ctx.stroke();
-                    ctx.closePath();
-
                     // draw purple line
                     ctx.beginPath();
                     ctx.strokeStyle = 'rgba(204, 0, 255, 1)';
-                    ctx.moveTo(borderWidth/2, (borderHeight/2 - 1));
-                    ctx.lineTo(ofvx, ofvy);
+                    ctx.moveTo(borderWidth/2, borderHeight/2);
+                    ctx.lineTo(vpx, vpy);
                     ctx.stroke();
                     ctx.closePath();
 
@@ -751,25 +661,6 @@ angular.module('beamng.apps')
                     yAxis.attr('y2', o.pos[1]/mapScale);
                     yAxis.css('stroke', '#FFFF00');
                     yAxis.css('stroke-width', '5px')
-                    //osv.stroke()
-                    
-                   /*
-                    console.log("px: " + px)
-                    console.log("ppos: " + p.pos[0] / mapScale)
-                    //console.log("mapScale: " + mapScale)
-                    if((borderWidth - 65) - (-p.pos[0] / mapScale) < px) {
-                      if(Math.abs(p.pos[0]) > px) {
-                        px = (-p.pos[0] / mapScale) - (borderWidth - 65) + px * 2;
-                      } else {
-                        px = (-p.pos[0] / mapScale) - (borderWidth - -60) + px * 2;
-                      }
-                    } 
-                    if((borderHeight - 25) - (p.pos[1] / mapScale) < py) {
-                      py = (p.pos[1] / mapScale) - (borderHeight - 25) + py * 2;
-                      //console.log("no")
-                    }
-                    console.log("npx: " + px)
-                    */
                   }
                 }
                 vehicleShapes[key].attr({"transform": "translate(" + px + "," + py + ") scale(" + iconScale + "," + iconScale + ") rotate(" + rot + ")", "opacity": show});
@@ -797,8 +688,11 @@ angular.module('beamng.apps')
                   element.css({
                     'background-color': 'rgba(50, 50, 50, ' + visibilitySlots[activeVisibilitySlot] + ')',
                   })
-                  if(i == 3 || i == 5) {
+                  if(i == 3 || i == 5 || i == 7) {
                     setupMap(navMapData);
+                  }
+                  if(i == 7) {
+                    document.getElementById(configKeys[6]).checked = true;
                   }
                 }
               } else {
@@ -811,8 +705,11 @@ angular.module('beamng.apps')
                   element.css({
                     'background-color': 'rgba(50, 50, 50, ' + visibilitySlots[activeVisibilitySlot] + ')',
                   })
-                  if(i == 3 || i == 5) {
+                  if(i == 3 || i == 5 || i == 7) {
                     setupMap(navMapData);
+                  }
+                  if(i == 6) {
+                    document.getElementById(configKeys[7]).checked = false;
                   }
                 }
               }
@@ -830,6 +727,7 @@ angular.module('beamng.apps')
           var dx = originX - targetX;
           var dy = originY - targetY;
           var theta = Math.atan2(-dy, -dx); // [0, Ⲡ] then [-Ⲡ, 0]; clockwise; 0° = east
+          theta = theta * 180 / Math.PI - 180
           return theta;
         }
         async function setupMap(data) {
@@ -845,7 +743,13 @@ angular.module('beamng.apps')
               'background-color': 'rgba(50, 50, 50, ' + visibilitySlots[activeVisibilitySlot] + ')',
               'border': '2px solid rgba(180, 180, 180, 0.8)',
             });
+            // reset overflow vehicles
+            var borderWidth = offScreenVehicleCanvas.width;
+            var borderHeight = offScreenVehicleCanvas.height;
+            var ctx = offScreenVehicleCanvas.getContext('2d');
+            ctx.clearRect(0, 0, borderWidth, borderHeight);
             svg.style.transform = "scale(-1, -1)"
+            if (yAxis) yAxis.remove();
             // Draw the map elements
             var minX = 999, maxX = -999;
             var minY = 999, maxY = -999;
