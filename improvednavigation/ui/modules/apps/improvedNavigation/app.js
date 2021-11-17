@@ -884,7 +884,8 @@ angular.module('beamng.apps')
                 'xlink:href': "/" + data.minimapImage,
               }).prependTo(svg);
 
-            } else if(config[5] == 'true') {
+            } 
+            if(config[5] == 'true') {
               // draw grid
               
               var distX = maxX - minX
