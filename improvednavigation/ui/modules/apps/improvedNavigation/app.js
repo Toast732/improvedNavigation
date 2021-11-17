@@ -618,89 +618,79 @@ angular.module('beamng.apps')
                     // get size of canvas
                     var borderWidth = offScreenVehicleCanvas.width;
                     var borderHeight = offScreenVehicleCanvas.height;
-                    var r = (borderWidth+borderHeight)/2; // radius
-                    // angle, oversized vehicle y, oversized vehicle x
-                    var angle = config[4] == 'false' ? (p.rot + getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale)) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale);
-                    var ovy = (r * Math.sin(Math.PI * 2 * angle / 360)) + borderHeight/2
-                    var ovx = (r * Math.cos(Math.PI * 2 * angle / 360)) + borderWidth/2
-                    
-                    if (ovx < 0) { // if its too far left
-                      var tvx = 0;
-                      var tvy = (Math.abs(ovx)/Math.sin((180 - (angle + 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
-                    } else if (borderWidth < ovx) { // if its too far right
-                      var tvx = borderWidth;
-                      var tvy = (Math.abs(ovx - borderWidth)/Math.sin((180 - (angle - 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
-                    }
-
-                    if (ovy < 0) { // if its too high up
-                      var tvy = 0;
-                      var tvx = (Math.abs(ovy)/Math.sin(angle * Math.PI / 180) * Math.sin((180 - (angle + 90)) * Math.PI / 180)) + ovx;
-                      if (tvx < 0) {
-                        tvx = 0;
-                        tvy = (Math.abs(ovx)/Math.sin((180 - (angle + 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
-                      } else if (tvx > borderWidth) {
-                        tvx = borderWidth;
-                        tvy = (Math.abs(ovx - borderWidth)/Math.sin((180 - (angle - 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy; 
-                      }
-                    }
-                    if (borderHeight < ovy) { // if its too far down
-                      var tvy = borderHeight;
-                      var tvx = (Math.abs(ovy - borderHeight)/Math.sin(angle * Math.PI / 180) * Math.sin((180 - (angle - 90)) * Math.PI / 180)) + ovx;
-                      if (tvx < 0 ) {
-                        tvx = 0;
-                        tvy = (Math.abs(ovx)/Math.sin((180 - (angle + 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
-                      } else if (tvx > borderWidth) {
-                        tvx = borderWidth;
-                        tvy = (Math.abs(ovx - borderWidth)/Math.sin((180 - (angle - 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy; 
-                      }
-                    }
-                    console.log("tvy: " + tvy)
-                    console.log("tvx: " + tvx)
-                    console.log("ovy: " + ovy)
-                    console.log("ovx: " + ovx)
-
-
-
                     var ctx = offScreenVehicleCanvas.getContext('2d');
                     // clear background
                     ctx.beginPath();
                     ctx.clearRect(0, 0, borderWidth, borderHeight);
                     ctx.fill();
                     ctx.closePath();
-                    // purple vehicle
+                    // check if vehicle is visible by the player
+                    var speedZoomMultiplier = 2;
+                    if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
+                      var speedZoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200); // speed tied zoom
+                    } else {
+                      var speedZoom = 0
+                    }
+                    zoom = (mapZoom - (speedZoom * speedZoomMultiplier))
+                    var visibleAreaWidth = borderWidth + 100 * zoom/-500;
+                    var visibleAreaHeight = borderHeight + 100 * zoom/-500;
+                    var dX = Math.abs(p.pos[0] - o.pos[0])
+                    var dY = Math.abs(p.pos[1] - o.pos[1])
+                    if(dX > visibleAreaWidth/2 + 20 || dY > visibleAreaHeight/2 + 20) {
 
-                    // draw white circle
-                    ctx.beginPath();
-                    ctx.arc(tvx, tvy, 10, 0, Math.PI * 2, false);
-                    ctx.fillStyle = 'rgba(255, 255, 255, 1)'; 
-                    ctx.fill();
-                    ctx.closePath();
+                      var r = (borderWidth+borderHeight)/2; // radius
+                      // angle, oversized vehicle y, oversized vehicle x
+                      var angle = config[4] == 'false' ? (p.rot + getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale)) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale);
+                      var ovy = (r * Math.sin(Math.PI * 2 * angle / 360)) + borderHeight/2
+                      var ovx = (r * Math.cos(Math.PI * 2 * angle / 360)) + borderWidth/2
+                      
+                      if (ovx < 0) { // if its too far left
+                        var tvx = 0;
+                        var tvy = (Math.abs(ovx)/Math.sin((180 - (angle + 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
+                      } else if (borderWidth < ovx) { // if its too far right
+                        var tvx = borderWidth;
+                        var tvy = (Math.abs(ovx - borderWidth)/Math.sin((180 - (angle - 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
+                      }
 
-                    // draw purple circle
-                    ctx.beginPath();
-                    ctx.arc(tvx, tvy, 7, 0, Math.PI * 2, false);
-                    //ctx.fillStyle = 'rgba(163, 211, 156, 1)';
-                    ctx.fillStyle = 'rgba(204, 0, 255, 1)';
-                    ctx.fill();
-                    ctx.closePath();
+                      if (ovy < 0) { // if its too high up
+                        var tvy = 0;
+                        var tvx = (Math.abs(ovy)/Math.sin(angle * Math.PI / 180) * Math.sin((180 - (angle + 90)) * Math.PI / 180)) + ovx;
+                        if (tvx < 0) { // if its too far left
+                          tvx = 0;
+                          tvy = (Math.abs(ovx)/Math.sin((180 - (angle + 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
+                        } else if (tvx > borderWidth) { // if its too far right
+                          tvx = borderWidth;
+                          tvy = (Math.abs(ovx - borderWidth)/Math.sin((180 - (angle - 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy; 
+                        }
+                      }
+                      if (borderHeight < ovy) { // if its too far down
+                        var tvy = borderHeight;
+                        var tvx = (Math.abs(ovy - borderHeight)/Math.sin(angle * Math.PI / 180) * Math.sin((180 - (angle - 90)) * Math.PI / 180)) + ovx;
+                        if (tvx < 0 ) { // if its too far left
+                          tvx = 0;
+                          tvy = (Math.abs(ovx)/Math.sin((180 - (angle + 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
+                        } else if (tvx > borderWidth) { // if its too far right
+                          tvx = borderWidth;
+                          tvy = (Math.abs(ovx - borderWidth)/Math.sin((180 - (angle - 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy; 
+                        }
+                      }
+                      // purple vehicle
 
-                    // draw purple line
-                    ctx.beginPath();
-                    ctx.strokeStyle = 'rgba(204, 0, 255, 1)';
-                    ctx.moveTo(borderWidth/2, borderHeight/2);
-                    ctx.lineTo(tvx, tvy);
-                    ctx.stroke();
-                    ctx.closePath();
+                      // draw white circle
+                      ctx.beginPath();
+                      ctx.arc(tvx, tvy, 10, 0, Math.PI * 2, false);
+                      ctx.fillStyle = 'rgba(255, 255, 255, 1)'; 
+                      ctx.fill();
+                      ctx.closePath();
 
-                    // draw yellow line
-                    if (yAxis) yAxis.remove();
-                    yAxis = hu('<line>', svg);
-                    yAxis.attr('x1', -p.pos[0]/mapScale);
-                    yAxis.attr('x2', -o.pos[0]/mapScale);
-                    yAxis.attr('y1', p.pos[1]/mapScale);
-                    yAxis.attr('y2', o.pos[1]/mapScale);
-                    yAxis.css('stroke', '#FFFF00');
-                    yAxis.css('stroke-width', '5px')
+                      // draw purple circle
+                      ctx.beginPath();
+                      ctx.arc(tvx, tvy, 7, 0, Math.PI * 2, false);
+                      //ctx.fillStyle = 'rgba(163, 211, 156, 1)';
+                      ctx.fillStyle = 'rgba(204, 0, 255, 1)';
+                      ctx.fill();
+                      ctx.closePath();
+                    }
                   }
                 }
                 vehicleShapes[key].attr({"transform": "translate(" + px + "," + py + ") scale(" + iconScale + "," + iconScale + ") rotate(" + rot + ")", "opacity": show});
