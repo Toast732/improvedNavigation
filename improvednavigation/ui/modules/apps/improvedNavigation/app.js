@@ -502,8 +502,12 @@ angular.module('beamng.apps')
         function centerMap(obj) {
           var speedZoomMultiplier = 2;
           if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
-            var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200); // speed tied zoom
+            var zoomX = -(1 + (obj.vel[0] * 3.6) * 1.5); // speed tied zoom
+            var zoomY = 1 + (obj.vel[1] * 3.6) * 1.5;
+            var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200);
           } else {
+            var zoomX = 0
+            var zoomY = 0
             var zoom = 0
           }
           // center on what?
@@ -514,11 +518,11 @@ angular.module('beamng.apps')
           var degreeNorth = config[4] == 'false' ? (obj.rot - 90) : 90;
           var npx = - Math.cos(degreeNorth * Math.PI / 180) * borderWidth * 0.75;
           var npy = borderHeight * 0.5 - Math.sin(degreeNorth * Math.PI / 180) * borderHeight * 0.75;
-          var translateX = (((viewParams[0]) + borderWidth/2 - 10) + focusX + 10);
+          var translateX = (((viewParams[0]) + borderWidth/2 - 10) + focusX + 10 + (zoomX / 2));
           if (config[6] == 'true') { // if centre on player is enabled
-            var translateY = (((viewParams[1]) + borderHeight/2) + focusY + (zoom / 2)); // translate map with speed
+            var translateY = (((viewParams[1]) + borderHeight/2) + focusY + (zoomY / 2)); // translate map with speed
           } else {
-            var translateY = (((viewParams[1]) + borderHeight/1.5) + focusY + (zoom / 2)); // translate map with speed
+            var translateY = (((viewParams[1]) + borderHeight/1.5) + focusY + (zoomY / 2)); // translate map with speed
           }
           if(settingsIsOpen == false) { // is settings menu closed?
             if(config[4] == 'false') { // if lock north is disabled
@@ -624,23 +628,22 @@ angular.module('beamng.apps')
                     // check if vehicle is visible by the player
                     var speedZoomMultiplier = 2;
                     if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
-                      var speedZoom = Math.min(1 + (p.speed * 3.6) * 1.5, 200); // speed tied zoom
+                      var zoom = Math.min(1 + (p.speed * 3.6) * 1.5, 200) * speedZoomMultiplier;
                     } else {
-                      var speedZoom = 0
+                      var zoom = 0
                     }
-                    var zoom = (mapZoom - (speedZoom * speedZoomMultiplier))
                     var visibleAreaWidth = borderWidth + 100 * zoom/-500;
                     var visibleAreaHeight = borderHeight + 100 * zoom/-500;
                     var dX = p.pos[0] - o.pos[0]
                     var dY = p.pos[1] - o.pos[1]
-                    if(dX > visibleAreaWidth/2 || dY > visibleAreaHeight/2 || dX < -visibleAreaWidth/2 || dY < -visibleAreaHeight/2) {
-
-                      if (config[6] == 'true') { // if centre on player is enabled
-                        var borderSizeDiv = 2;
-                      } else {
-                        var borderSizeDiv = 1.5;
-                      }
-
+                    if (config[6] == 'true') { // if centre on player is enabled
+                      var borderSizeDiv = 2;
+                    } else {
+                      var borderSizeDiv = 1.5;
+                    }
+                    var scalingRatioWidth = borderWidth / 475
+                    var scalingRatioHeight = borderHeight / 275
+                    if(dX > visibleAreaWidth - 105 * scalingRatioWidth || dY > visibleAreaHeight - 55 * scalingRatioHeight|| dX < -visibleAreaWidth + 105 * scalingRatioWidth|| dY < -visibleAreaHeight + 55 * scalingRatioHeight) {
                       var r = (borderWidth+borderHeight)/2; // radius
                       // angle, oversized vehicle y, oversized vehicle x
                       var angle = config[4] == 'false' ? (p.rot + getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) * 180 / Math.PI - 180) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) * 180 / Math.PI - 180;
