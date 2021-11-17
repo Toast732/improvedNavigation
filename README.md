@@ -17,6 +17,10 @@ Features:
 - Scale Map Elements with Zoom (0.2.1)
 - Toggle Speed Tied Zoom (0.2.1)
 
+Alpha Features (Features not on the forum version):
+- Show Offscreen Vehicles (0.3)
+- Centre on player (0.3)
+
 
 Video of the mod:
 https://www.youtube.com/watch?v=H5UTOlVwXvA
