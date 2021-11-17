@@ -18,9 +18,9 @@ Features:
 - Toggle Speed Tied Zoom (0.2.1)
 
 Alpha Features (Features not on the forum version):
-- Show Offscreen Vehicles (0.3)
-- Centre on player (0.3)
-
+- Show Offscreen Vehicles (0.3.0.1)
+- Centre on player (0.3.0.1)
+- Show Grid will now show even if the map has a background (0.3.0.2)
 
 Video of the mod:
 https://www.youtube.com/watch?v=H5UTOlVwXvA
