@@ -511,7 +511,6 @@ angular.module('beamng.apps')
           // center on what?
           var focusX = -obj.pos[0] / mapScale;
           var focusY = obj.pos[1] / mapScale;
-
           var borderWidth = root.children[0].clientWidth;
           var borderHeight = root.children[0].clientHeight;
           var degreeNorth = config[4] == 'false' ? (obj.rot - 90) : 90;
@@ -524,10 +523,10 @@ angular.module('beamng.apps')
             var translateY = (((viewParams[1]) + borderHeight/1.5) + focusY + (zoom / 2)); // translate map with speed
           }
           if(settingsIsOpen == false) { // is settings menu closed?
-
             if(config[4] == 'false') { // if lock north is disabled
               mapcontainer.style.transform = "translate3d(" + translateX + "px, " + translateY + "px," + (mapZoom - (zoom * speedZoomMultiplier)) + "px)" + "rotateX(" + 0 + (zoom / 10) + "deg)" + "rotateZ(" + (180 + Utils.roundDec(obj.rot, 2)) + "deg)"
-            } else {
+              mapcontainer.style.transformOrigin = (((viewParams[0] * -1)) - focusX) + "px " + ((viewParams[1] * -1) - focusY) + "px"
+            } else { // if lock north is enabled
               mapcontainer.style.transform = "translate3d(" + translateX + "px, " + translateY + "px," + (mapZoom - (zoom * speedZoomMultiplier)) + "px)" + "rotateX(" + 0 + (zoom / 10) + "deg)" + "rotateZ(" + (270 + Utils.roundDec(90, 2)) + "deg)"
             }
 
@@ -631,7 +630,7 @@ angular.module('beamng.apps')
                     } else {
                       var speedZoom = 0
                     }
-                    zoom = (mapZoom - (speedZoom * speedZoomMultiplier))
+                    var zoom = (mapZoom - (speedZoom * speedZoomMultiplier))
                     var visibleAreaWidth = borderWidth + 100 * zoom/-500;
                     var visibleAreaHeight = borderHeight + 100 * zoom/-500;
                     var dX = p.pos[0] - o.pos[0]
@@ -740,6 +739,7 @@ angular.module('beamng.apps')
                   }
                   if(i == 7) {
                     document.getElementById(configKeys[6]).checked = true;
+                    config[6] = 'true';
                   }
                 }
               } else {
