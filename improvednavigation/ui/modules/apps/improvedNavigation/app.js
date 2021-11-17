@@ -626,7 +626,7 @@ angular.module('beamng.apps')
                     // check if vehicle is visible by the player
                     var speedZoomMultiplier = 2;
                     if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
-                      var speedZoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200); // speed tied zoom
+                      var speedZoom = Math.min(1 + (p.speed * 3.6) * 1.5, 200); // speed tied zoom
                     } else {
                       var speedZoom = 0
                     }
