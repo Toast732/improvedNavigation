@@ -61,7 +61,7 @@ angular.module('beamng.apps')
         </style>
         <style>
           .checkboxlist {
-            height: 100px;
+            height: 4096px;
             width: 4096px;
             overflow-y:auto;
             visibility: hidden;
@@ -85,22 +85,22 @@ angular.module('beamng.apps')
           </button>
         </div>
         <div id="checkboxes" class="checkboxlist">
-          <label for="navMapSmoothZoom" style="position: absolute; top:36px; left:30px;" class="checkbox">Smooth Zoom</label>
-          <input type="checkbox" id="navMapSmoothZoom" style="position: absolute; top:40px; left:10px;" class="checkbox"></input>
-          <label for="navMapDisplayZoom" style="position: absolute; top:66px; left:30px;" class="checkbox">Display Zoom Level</label>
-          <input type="checkbox" id="navMapDisplayZoom" style="position: absolute; top:70px; left:10px;" class="checkbox"></input>
-          <label for="navMapSpeedTiedZoom" style="position: absolute; top:96px; left:30px;" class="checkbox">Speed Tied Zoom</label>
-          <input type="checkbox" id="navMapSpeedTiedZoom" style="position: absolute; top:100px; left:10px;" class="checkbox"></input>
-          <label for="navMapElementScaleTiedZoom" style="position: absolute; top:126px; left:30px;" class="checkbox">Scale Map Elements with Zoom</label>
-          <input type="checkbox" id="ElementScaleTiedZoom" style="position: absolute; top:130px; left:10px;" class="checkbox"></input>
-          <label for="navMapNorthLocked" style="position: absolute; top:156px; left:30px;" class="checkbox">Lock North</label>
-          <input type="checkbox" id="navMapNorthLocked" style="position: absolute; top:160px; left:10px;" class="checkbox"></input>
-          <label for="navMapShowGrid" style="position: absolute; top:186px; left:30px;" class="checkbox">Show Grid</label>
-          <input type="checkbox" id="navMapShowGrid" style="position: absolute; top:190px; left:10px;" class="checkbox"></input>
-          <label for="navMapCentreOnPlayer" style="position: absolute; top:216px; left:30px;" class="checkbox">Centre On Player</label>
-          <input type="checkbox" id="navMapCentreOnPlayer" style="position: absolute; top:220px; left:10px;" class="checkbox"></input>
-          <label for="navMapShowOffScreenVehicles" style="position: absolute; top:246px; left:30px;" class="checkbox">Show Offscreen Vehicles</label>
-          <input type="checkbox" id="navMapShowOffScreenVehicles" style="position: absolute; top:250px; left:10px;" class="checkbox"></input>
+          <label for="navMapSmoothZoom" style="position: fixed; top:36px; left:30px;" class="checkbox">Smooth Zoom</label>
+          <input type="checkbox" id="navMapSmoothZoom" style="position: fixed; top:40px; left:10px;" class="checkbox"></input>
+          <label for="navMapDisplayZoom" style="position: fixed; top:66px; left:30px;" class="checkbox">Display Zoom Level</label>
+          <input type="checkbox" id="navMapDisplayZoom" style="position: fixed; top:70px; left:10px;" class="checkbox"></input>
+          <label for="navMapSpeedTiedZoom" style="position: fixed; top:96px; left:30px;" class="checkbox">Speed Tied Zoom</label>
+          <input type="checkbox" id="navMapSpeedTiedZoom" style="position: fixed; top:100px; left:10px;" class="checkbox"></input>
+          <label for="navMapElementScaleTiedZoom" style="position: fixed; top:126px; left:30px;" class="checkbox">Scale Map Elements with Zoom</label>
+          <input type="checkbox" id="ElementScaleTiedZoom" style="position: fixed; top:130px; left:10px;" class="checkbox"></input>
+          <label for="navMapNorthLocked" style="position: fixed; top:156px; left:30px;" class="checkbox">Lock North</label>
+          <input type="checkbox" id="navMapNorthLocked" style="position: fixed; top:160px; left:10px;" class="checkbox"></input>
+          <label for="navMapShowGrid" style="position: fixed; top:186px; left:30px;" class="checkbox">Show Grid</label>
+          <input type="checkbox" id="navMapShowGrid" style="position: fixed; top:190px; left:10px;" class="checkbox"></input>
+          <label for="navMapCentreOnPlayer" style="position: fixed; top:216px; left:30px;" class="checkbox">Centre On Player</label>
+          <input type="checkbox" id="navMapCentreOnPlayer" style="position: fixed; top:220px; left:10px;" class="checkbox"></input>
+          <label for="navMapShowOffScreenVehicles" style="position: fixed; top:246px; left:30px;" class="checkbox">Show Offscreen Vehicles</label>
+          <input type="checkbox" id="navMapShowOffScreenVehicles" style="position: fixed; top:250px; left:10px;" class="checkbox"></input>
         </div>
         <!-- Collectible Display -->
         <div ng-if="collectableTotal > 0" style="font-size: 1.2em; padding: 1%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; top:15px; left: 15px">
