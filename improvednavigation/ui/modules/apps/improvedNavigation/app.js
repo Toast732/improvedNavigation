@@ -593,6 +593,15 @@ angular.module('beamng.apps')
               updatePlayerShape(data.controlID, data); // update shape of new vehicle
               lastcontrolID = data.controlID;
             }
+            // get size of canvas
+            var borderWidth = offScreenVehicleCanvas.width;
+            var borderHeight = offScreenVehicleCanvas.height;
+            var ctx = offScreenVehicleCanvas.getContext('2d');
+            // clear background
+            ctx.beginPath();
+            ctx.clearRect(0, 0, borderWidth, borderHeight);
+            ctx.fill();
+            ctx.closePath();
             // update shape positions
             for (var key in data.objects) {
               var o = data.objects[key];
@@ -615,15 +624,6 @@ angular.module('beamng.apps')
                 }
                 if(config[7] == 'true') { // if show offscreen vehicles is enabled
                   if(o != p) {
-                    // get size of canvas
-                    var borderWidth = offScreenVehicleCanvas.width;
-                    var borderHeight = offScreenVehicleCanvas.height;
-                    var ctx = offScreenVehicleCanvas.getContext('2d');
-                    // clear background
-                    ctx.beginPath();
-                    ctx.clearRect(0, 0, borderWidth, borderHeight);
-                    ctx.fill();
-                    ctx.closePath();
                     // check if vehicle is visible by the player
                     var speedZoomMultiplier = 2;
                     if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
@@ -634,22 +634,30 @@ angular.module('beamng.apps')
                     zoom = (mapZoom - (speedZoom * speedZoomMultiplier))
                     var visibleAreaWidth = borderWidth + 100 * zoom/-500;
                     var visibleAreaHeight = borderHeight + 100 * zoom/-500;
-                    var dX = Math.abs(p.pos[0] - o.pos[0])
-                    var dY = Math.abs(p.pos[1] - o.pos[1])
-                    if(dX > visibleAreaWidth/2 + 20 || dY > visibleAreaHeight/2 + 20) {
+                    var dX = p.pos[0] - o.pos[0]
+                    var dY = p.pos[1] - o.pos[1]
+                    if(dX > visibleAreaWidth/2 || dY > visibleAreaHeight/2 || dX < -visibleAreaWidth/2 || dY < -visibleAreaHeight/2) {
 
                       var r = (borderWidth+borderHeight)/2; // radius
                       // angle, oversized vehicle y, oversized vehicle x
-                      var angle = config[4] == 'false' ? (p.rot + getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale)) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale);
+                      var angle = config[4] == 'false' ? (p.rot + getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) * 180 / Math.PI - 180) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) * 180 / Math.PI - 180;
                       var ovy = (r * Math.sin(Math.PI * 2 * angle / 360)) + borderHeight/2
                       var ovx = (r * Math.cos(Math.PI * 2 * angle / 360)) + borderWidth/2
-                      
+
+                      var rotType = 0;
+
                       if (ovx < 0) { // if its too far left
                         var tvx = 0;
                         var tvy = (Math.abs(ovx)/Math.sin((180 - (angle + 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
+                        if (tvy > borderHeight/2) { // if its below the middle of the map
+                          rotType = 1
+                        }
                       } else if (borderWidth < ovx) { // if its too far right
                         var tvx = borderWidth;
                         var tvy = (Math.abs(ovx - borderWidth)/Math.sin((180 - (angle - 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
+                        if (tvy > borderHeight/2) { // if its below the middle of the map
+                          rotType = 1
+                        }
                       }
 
                       if (ovy < 0) { // if its too high up
@@ -666,6 +674,7 @@ angular.module('beamng.apps')
                       if (borderHeight < ovy) { // if its too far down
                         var tvy = borderHeight;
                         var tvx = (Math.abs(ovy - borderHeight)/Math.sin(angle * Math.PI / 180) * Math.sin((180 - (angle - 90)) * Math.PI / 180)) + ovx;
+                        rotType = 1
                         if (tvx < 0 ) { // if its too far left
                           tvx = 0;
                           tvy = (Math.abs(ovx)/Math.sin((180 - (angle + 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
@@ -674,22 +683,30 @@ angular.module('beamng.apps')
                           tvy = (Math.abs(ovx - borderWidth)/Math.sin((180 - (angle - 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy; 
                         }
                       }
-                      // purple vehicle
-
-                      // draw white circle
+                      ctx.save();
                       ctx.beginPath();
-                      ctx.arc(tvx, tvy, 10, 0, Math.PI * 2, false);
-                      ctx.fillStyle = 'rgba(255, 255, 255, 1)'; 
+                      ctx.lineWidth = 4;
+                      ctx.strokeStyle = '#FFFFFF';
+                      ctx.translate(tvx, tvy);
+                      if (rotType == 1) {
+                        ctx.rotate(Math.PI - Math.cos(getAngle(borderWidth/2, borderHeight/2, tvx, tvy)));
+                      } else {
+                        ctx.rotate(Math.cos(getAngle(borderWidth/2, borderHeight/2, tvx, tvy)));
+                      }
+                      ctx.translate(-tvx, -tvy)
+                      ctx.moveTo(tvx, tvy);
+                      ctx.lineTo(tvx + 15, tvy + 15)
+                      ctx.lineTo(tvx + 8, tvy + 22)
+                      ctx.lineTo(tvx, tvy + 15)
+                      ctx.lineTo(tvx - 8, tvy + 22)
+                      ctx.lineTo(tvx - 15, tvy + 15)
+                      ctx.lineTo(tvx + 1, tvy)
+                      ctx.fillStyle = '#A3D39C';
                       ctx.fill();
+                      ctx.stroke();
                       ctx.closePath();
+                      ctx.restore();
 
-                      // draw purple circle
-                      ctx.beginPath();
-                      ctx.arc(tvx, tvy, 7, 0, Math.PI * 2, false);
-                      //ctx.fillStyle = 'rgba(163, 211, 156, 1)';
-                      ctx.fillStyle = 'rgba(204, 0, 255, 1)';
-                      ctx.fill();
-                      ctx.closePath();
                     }
                   }
                 }
@@ -757,7 +774,6 @@ angular.module('beamng.apps')
           var dx = originX - targetX;
           var dy = originY - targetY;
           var theta = Math.atan2(-dy, -dx); // [0, Ⲡ] then [-Ⲡ, 0]; clockwise; 0° = east
-          theta = theta * 180 / Math.PI - 180
           return theta;
         }
         async function setupMap(data) {
