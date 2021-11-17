@@ -720,12 +720,12 @@ angular.module('beamng.apps')
                     // check if vehicle is visible by the player
                     var speedZoomMultiplier = 2;
                     if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
-                      var zoom = Math.min(1 + (p.speed * 3.6) * 1.5, 200) * speedZoomMultiplier;
+                      var zoom = mapZoom - (Math.min(1 + (p.speed * 3.6) * 1.5, 200) * speedZoomMultiplier);
                     } else {
-                      var zoom = 0
+                      var zoom = mapZoom
                     }
-                    var visibleAreaWidth = borderWidth + 100 * zoom/-500;
-                    var visibleAreaHeight = borderHeight + 100 * zoom/-500;
+                    var visibleAreaWidth = borderWidth + 100 * (zoom/-500)/2;
+                    var visibleAreaHeight = borderHeight + 100 * (zoom/-500)/2;
                     var dX = p.pos[0] - o.pos[0]
                     var dY = p.pos[1] - o.pos[1]
                     if (config[6] == 'true') { // if centre on player is enabled
@@ -733,8 +733,8 @@ angular.module('beamng.apps')
                     } else {
                       var borderSizeDiv = 1.5;
                     }
-                    var scalingRatioWidth = borderWidth / 475
-                    var scalingRatioHeight = borderHeight / 275
+                    var scalingRatioWidth = (475/borderWidth/2)
+                    var scalingRatioHeight = (275/borderHeight/2)
                     if(dX > visibleAreaWidth - 105 * scalingRatioWidth || dY > visibleAreaHeight - 55 * scalingRatioHeight|| dX < -visibleAreaWidth + 105 * scalingRatioWidth|| dY < -visibleAreaHeight + 55 * scalingRatioHeight) {
                       var r = (borderWidth+borderHeight)/2; // radius
                       // angle, oversized vehicle y, oversized vehicle x
