@@ -615,12 +615,52 @@ angular.module('beamng.apps')
                 }
                 if(config[7] == 'true') { // if show offscreen vehicles is enabled
                   if(o != p) {
+                    // get size of canvas
                     var borderWidth = offScreenVehicleCanvas.width;
                     var borderHeight = offScreenVehicleCanvas.height;
-                    var r = (borderWidth+borderHeight)/2;
+                    var r = (borderWidth+borderHeight)/2; // radius
+                    // angle, oversized vehicle y, oversized vehicle x
                     var angle = config[4] == 'false' ? (p.rot + getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale)) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale);
-                    var vpy = (r * Math.sin(Math.PI * 2 * angle / 360)) + borderHeight/2
-                    var vpx = (r * Math.cos(Math.PI * 2 * angle / 360)) + borderWidth/2
+                    var ovy = (r * Math.sin(Math.PI * 2 * angle / 360)) + borderHeight/2
+                    var ovx = (r * Math.cos(Math.PI * 2 * angle / 360)) + borderWidth/2
+                    
+                    if (ovx < 0) { // if its too far left
+                      var tvx = 0;
+                      var tvy = (Math.abs(ovx)/Math.sin((180 - (angle + 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
+                    } else if (borderWidth < ovx) { // if its too far right
+                      var tvx = borderWidth;
+                      var tvy = (Math.abs(ovx - borderWidth)/Math.sin((180 - (angle - 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
+                    }
+
+                    if (ovy < 0) { // if its too high up
+                      var tvy = 0;
+                      var tvx = (Math.abs(ovy)/Math.sin(angle * Math.PI / 180) * Math.sin((180 - (angle + 90)) * Math.PI / 180)) + ovx;
+                      if (tvx < 0) {
+                        tvx = 0;
+                        tvy = (Math.abs(ovx)/Math.sin((180 - (angle + 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
+                      } else if (tvx > borderWidth) {
+                        tvx = borderWidth;
+                        tvy = (Math.abs(ovx - borderWidth)/Math.sin((180 - (angle - 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy; 
+                      }
+                    }
+                    if (borderHeight < ovy) { // if its too far down
+                      var tvy = borderHeight;
+                      var tvx = (Math.abs(ovy - borderHeight)/Math.sin(angle * Math.PI / 180) * Math.sin((180 - (angle - 90)) * Math.PI / 180)) + ovx;
+                      if (tvx < 0 ) {
+                        tvx = 0;
+                        tvy = (Math.abs(ovx)/Math.sin((180 - (angle + 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy;
+                      } else if (tvx > borderWidth) {
+                        tvx = borderWidth;
+                        tvy = (Math.abs(ovx - borderWidth)/Math.sin((180 - (angle - 90)) * Math.PI / 180) * Math.sin(angle * Math.PI / 180)) + ovy; 
+                      }
+                    }
+                    console.log("tvy: " + tvy)
+                    console.log("tvx: " + tvx)
+                    console.log("ovy: " + ovy)
+                    console.log("ovx: " + ovx)
+
+
+
                     var ctx = offScreenVehicleCanvas.getContext('2d');
                     // clear background
                     ctx.beginPath();
@@ -631,14 +671,14 @@ angular.module('beamng.apps')
 
                     // draw white circle
                     ctx.beginPath();
-                    ctx.arc(vpx, vpy, 10, 0, Math.PI * 2, false);
+                    ctx.arc(tvx, tvy, 10, 0, Math.PI * 2, false);
                     ctx.fillStyle = 'rgba(255, 255, 255, 1)'; 
                     ctx.fill();
                     ctx.closePath();
 
                     // draw purple circle
                     ctx.beginPath();
-                    ctx.arc(vpx, vpy, 7, 0, Math.PI * 2, false);
+                    ctx.arc(tvx, tvy, 7, 0, Math.PI * 2, false);
                     //ctx.fillStyle = 'rgba(163, 211, 156, 1)';
                     ctx.fillStyle = 'rgba(204, 0, 255, 1)';
                     ctx.fill();
@@ -648,7 +688,7 @@ angular.module('beamng.apps')
                     ctx.beginPath();
                     ctx.strokeStyle = 'rgba(204, 0, 255, 1)';
                     ctx.moveTo(borderWidth/2, borderHeight/2);
-                    ctx.lineTo(vpx, vpy);
+                    ctx.lineTo(tvx, tvy);
                     ctx.stroke();
                     ctx.closePath();
 
