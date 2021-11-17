@@ -741,25 +741,32 @@ angular.module('beamng.apps')
                     // check if vehicle is visible by the player
                     var speedZoomMultiplier = 2;
                     if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
-                      var zoom = mapZoom - (Math.min(1 + (p.speed * 3.6) * 1.5, 200) * speedZoomMultiplier);
+                      var zoom = (mapZoom - (Math.min(1 + (p.speed * 3.6) * 1.5, 200) * speedZoomMultiplier));
                     } else {
                       var zoom = mapZoom
                     }
-                    var visibleAreaWidth = borderWidth + 100 * (zoom/-500)/2;
-                    var visibleAreaHeight = borderHeight + 100 * (zoom/-500)/2;
-                    var dX = p.pos[0] - o.pos[0]
-                    var dY = p.pos[1] - o.pos[1]
+                    var visibleAreaWidth = borderWidth + 100 * (zoom/-500)*mapScale;
+                    var visibleAreaHeight = borderHeight + 100 * (zoom/-500)*mapScale;
+                    var dX = (p.pos[0] - o.pos[0])
+                    var dY = (p.pos[1] - o.pos[1])
                     if (config[6] == 'true') { // if centre on player is enabled
                       var borderSizeDiv = 2;
+                      var subAmountY = 0;
                     } else {
                       var borderSizeDiv = 1.5;
+                      var subAmountY = (borderHeight/4)*mapScale;
                     }
-                    var scalingRatioWidth = (475/borderWidth/2)
-                    var scalingRatioHeight = (275/borderHeight/2)
-                    if(dX > visibleAreaWidth - 105 * scalingRatioWidth || dY > visibleAreaHeight - 55 * scalingRatioHeight|| dX < -visibleAreaWidth + 105 * scalingRatioWidth|| dY < -visibleAreaHeight + 55 * scalingRatioHeight) {
+                    if (mapScale > 1) {
+                      var scalingRatioWidth = ((borderWidth)/475)*(-mapScale*2)
+                      var scalingRatioHeight = ((borderHeight*borderSizeDiv)/275)*(-mapScale*2)
+                    } else {
+                      var scalingRatioWidth = (borderWidth/475)*mapScale
+                      var scalingRatioHeight = (borderHeight/275)*mapScale
+                    }
+                    if(dX > visibleAreaWidth/2 - (27.5*mapScale) * scalingRatioWidth|| dY > (visibleAreaHeight/2 - 27.5 * scalingRatioHeight) - subAmountY|| dX < -visibleAreaWidth/2 + (27.5*mapScale) * scalingRatioWidth|| dY < (-visibleAreaHeight/2 + 27.5 * scalingRatioHeight) - subAmountY/2) {
                       var r = (borderWidth+borderHeight)/2; // radius
                       // angle, oversized vehicle y, oversized vehicle x
-                      var angle = config[4] == 'false' ? (p.rot + getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) * 180 / Math.PI - 180) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) * 180 / Math.PI - 180;
+                      var angle = config[4] == 'false' ? (p.rot - (-getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) - 135)* 180 / Math.PI - 180) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) * 180 / Math.PI - 180;
                       var ovy = (r * Math.sin(Math.PI * 2 * angle / 360)) + borderHeight/borderSizeDiv
                       var ovx = (r * Math.cos(Math.PI * 2 * angle / 360)) + borderWidth/2
 
