@@ -886,8 +886,13 @@ angular.module('beamng.apps')
 
             } 
             if(config[5] == 'true') {
+              if (maxX == -999 && minX == 999 && maxY == -999 && minY == 999) {
+                minX = -2048;
+                maxX = 2048;
+                minY = -2048;
+                maxY = 2048;
+              }
               // draw grid
-              
               var distX = maxX - minX
               var dx = 50
               for (var x = minX; x <= maxX * dx + 1; x += dx) {
