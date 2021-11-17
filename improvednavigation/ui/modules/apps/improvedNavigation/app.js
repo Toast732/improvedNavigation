@@ -59,6 +59,7 @@ angular.module('beamng.apps')
             font-family: Tahoma, sans-serif;
             position: relative;
             display: inline-block;
+            
           }
         </style>
         <style>
@@ -70,27 +71,28 @@ angular.module('beamng.apps')
           }
         </style>
         <style>
-          .checkbox .tooltiptextlines1 {
+        .checkbox .tooltiptextlines1 {
+            visibility: hidden;
             font-size: 12px;
             font-family: Tahoma, sans-serif;
-            visibility: hidden;
             width: 300px;
             background-color: black;
             color: #fff;
             text-align: center;
             padding: 5px 0;
             border-radius: 6px;
-            z-index: 1;
             position: absolute;
             bottom: 100%;
             left: 0%;
             height: 17px;
+            opacity: 0;
+            transition: opacity 0.3s;
             <!-- subtract 22 from height -->
           }
           .checkbox .tooltiptextlines2 {
+            visibility: hidden;
             font-size: 12px;
             font-family: Tahoma, sans-serif;
-            visibility: hidden;
             width: 300px;
             height: 29px;
             background-color: black;
@@ -98,40 +100,59 @@ angular.module('beamng.apps')
             text-align: center;
             padding: 5px 0;
             border-radius: 6px;
-            z-index: 1;
             position: absolute;
             bottom: 100%;
             left: 0%;
+            opacity: 0;
+            transition: opacity 0.3s;
             <!-- subtract 34 from height -->
           }
           .checkbox .tooltiptextlines3 {
+            visibility: hidden;
             font-size: 12px;
             font-family: Tahoma, sans-serif;
-            visibility: hidden;
             width: 300px;
             background-color: black;
             color: #fff;
             text-align: center;
             padding: 5px 0;
             border-radius: 6px;
-            z-index: 1;
             position: absolute;
             bottom: 100%;
             left: 0%;
             height: 41px;
+            opacity: 0;
+            transition: opacity 0.3s;
             <!-- subtract 46 from height -->
           }
         </style>
         <style>
-          .checkbox:hover .tooltiptextlines1 {
-            visibility: visible;
+          .checkbox:hover .tooltiptextlines1:not(:hover) {
+            animation-name:fade;
+            animation-duration:0.3s;
+            animation-fill-mode: forwards;
           }
-          .checkbox:hover .tooltiptextlines2 {
-            visibility: visible;
+          .checkbox:hover .tooltiptextlines2:not(:hover) {
+            animation-name:fade;
+            animation-duration:0.3s;
+            animation-fill-mode: forwards;
           }
-          .checkbox:hover .tooltiptextlines3 {
-            visibility: visible;
+          .checkbox:hover .tooltiptextlines3:not(:hover) {
+            animation-name:fade;
+            animation-duration:0.3s;
+            animation-fill-mode: forwards;
           }
+          @keyframes fade {
+            from {
+                opacity: 0;
+                visibility: hidden;
+            }
+        
+            to {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
         </style>
         <!-- Zoom Display -->
         <div id="zoomDisplay" style="font-size: 1.2em; padding: 0.2%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; bottom:0px; left:0px">
