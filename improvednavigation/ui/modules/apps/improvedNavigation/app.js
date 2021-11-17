@@ -64,6 +64,7 @@ angular.module('beamng.apps')
             height: 100px;
             width: 4096px;
             overflow-y:auto;
+            visibility: hidden;
           }
         </style>
         <!-- Zoom Display -->
@@ -85,21 +86,21 @@ angular.module('beamng.apps')
         </div>
         <div id="checkboxes" class="checkboxlist">
           <label for="navMapSmoothZoom" style="position: absolute; top:36px; left:30px;" class="checkbox">Smooth Zoom</label>
-          <input type="checkbox" id="navMapSmoothZoom" style="position: absolute; top:40px; left:10px;"></input>
+          <input type="checkbox" id="navMapSmoothZoom" style="position: absolute; top:40px; left:10px;" class="checkbox"></input>
           <label for="navMapDisplayZoom" style="position: absolute; top:66px; left:30px;" class="checkbox">Display Zoom Level</label>
-          <input type="checkbox" id="navMapDisplayZoom" style="position: absolute; top:70px; left:10px;"></input>
+          <input type="checkbox" id="navMapDisplayZoom" style="position: absolute; top:70px; left:10px;" class="checkbox"></input>
           <label for="navMapSpeedTiedZoom" style="position: absolute; top:96px; left:30px;" class="checkbox">Speed Tied Zoom</label>
-          <input type="checkbox" id="navMapSpeedTiedZoom" style="position: absolute; top:100px; left:10px;"></input>
+          <input type="checkbox" id="navMapSpeedTiedZoom" style="position: absolute; top:100px; left:10px;" class="checkbox"></input>
           <label for="navMapElementScaleTiedZoom" style="position: absolute; top:126px; left:30px;" class="checkbox">Scale Map Elements with Zoom</label>
-          <input type="checkbox" id="ElementScaleTiedZoom" style="position: absolute; top:130px; left:10px;"></input>
+          <input type="checkbox" id="ElementScaleTiedZoom" style="position: absolute; top:130px; left:10px;" class="checkbox"></input>
           <label for="navMapNorthLocked" style="position: absolute; top:156px; left:30px;" class="checkbox">Lock North</label>
-          <input type="checkbox" id="navMapNorthLocked" style="position: absolute; top:160px; left:10px;"></input>
+          <input type="checkbox" id="navMapNorthLocked" style="position: absolute; top:160px; left:10px;" class="checkbox"></input>
           <label for="navMapShowGrid" style="position: absolute; top:186px; left:30px;" class="checkbox">Show Grid</label>
-          <input type="checkbox" id="navMapShowGrid" style="position: absolute; top:190px; left:10px;"></input>
+          <input type="checkbox" id="navMapShowGrid" style="position: absolute; top:190px; left:10px;" class="checkbox"></input>
           <label for="navMapCentreOnPlayer" style="position: absolute; top:216px; left:30px;" class="checkbox">Centre On Player</label>
-          <input type="checkbox" id="navMapCentreOnPlayer" style="position: absolute; top:220px; left:10px;"></input>
-          <label for="navMapShowOffScreenVehicles" style="position: absolute; top:246px; left:50px;" class="checkbox">Show Offscreen Vehicles</label>
-          <input type="checkbox" id="navMapShowOffScreenVehicles" style="position: absolute; top:250px; left:30px;"></input>
+          <input type="checkbox" id="navMapCentreOnPlayer" style="position: absolute; top:220px; left:10px;" class="checkbox"></input>
+          <label for="navMapShowOffScreenVehicles" style="position: absolute; top:246px; left:30px;" class="checkbox">Show Offscreen Vehicles</label>
+          <input type="checkbox" id="navMapShowOffScreenVehicles" style="position: absolute; top:250px; left:10px;" class="checkbox"></input>
         </div>
         <!-- Collectible Display -->
         <div ng-if="collectableTotal > 0" style="font-size: 1.2em; padding: 1%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; top:15px; left: 15px">
@@ -146,9 +147,6 @@ angular.module('beamng.apps')
         var navMapData = null;
         var bgImage = null;
         var red = true;
-
-        // make sure checkboxes are not visible
-        settingsCheckBoxes.style.visibility = "hidden";
         
         // load settings
         var config = [];
@@ -637,10 +635,16 @@ angular.module('beamng.apps')
                     var dY = p.pos[1] - o.pos[1]
                     if(dX > visibleAreaWidth/2 || dY > visibleAreaHeight/2 || dX < -visibleAreaWidth/2 || dY < -visibleAreaHeight/2) {
 
+                      if (config[6] == 'true') { // if centre on player is enabled
+                        var borderSizeDiv = 2;
+                      } else {
+                        var borderSizeDiv = 1.5;
+                      }
+
                       var r = (borderWidth+borderHeight)/2; // radius
                       // angle, oversized vehicle y, oversized vehicle x
                       var angle = config[4] == 'false' ? (p.rot + getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) * 180 / Math.PI - 180) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) * 180 / Math.PI - 180;
-                      var ovy = (r * Math.sin(Math.PI * 2 * angle / 360)) + borderHeight/2
+                      var ovy = (r * Math.sin(Math.PI * 2 * angle / 360)) + borderHeight/borderSizeDiv
                       var ovx = (r * Math.cos(Math.PI * 2 * angle / 360)) + borderWidth/2
 
                       var rotType = 0;
@@ -737,10 +741,6 @@ angular.module('beamng.apps')
                   if(i == 3 || i == 5 || i == 7) {
                     setupMap(navMapData);
                   }
-                  if(i == 7) {
-                    document.getElementById(configKeys[6]).checked = true;
-                    config[6] = 'true';
-                  }
                 }
               } else {
                 if(config[i] != 'false') {
@@ -754,9 +754,6 @@ angular.module('beamng.apps')
                   })
                   if(i == 3 || i == 5 || i == 7) {
                     setupMap(navMapData);
-                  }
-                  if(i == 6) {
-                    document.getElementById(configKeys[7]).checked = false;
                   }
                 }
               }
