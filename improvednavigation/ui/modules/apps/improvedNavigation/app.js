@@ -57,6 +57,8 @@ angular.module('beamng.apps')
             color: white;
             font-size: 20px;
             font-family: Tahoma, sans-serif;
+            position: relative;
+            display: inline-block;
           }
         </style>
         <style>
@@ -65,6 +67,70 @@ angular.module('beamng.apps')
             width: 4096px;
             overflow-y:auto;
             visibility: hidden;
+          }
+        </style>
+        <style>
+          .checkbox .tooltiptextlines1 {
+            font-size: 12px;
+            font-family: Tahoma, sans-serif;
+            visibility: hidden;
+            width: 300px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+            z-index: 1;
+            position: absolute;
+            bottom: 100%;
+            left: 0%;
+            height: 17px;
+            <!-- subtract 22 from height -->
+          }
+          .checkbox .tooltiptextlines2 {
+            font-size: 12px;
+            font-family: Tahoma, sans-serif;
+            visibility: hidden;
+            width: 300px;
+            height: 29px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+            z-index: 1;
+            position: absolute;
+            bottom: 100%;
+            left: 0%;
+            <!-- subtract 34 from height -->
+          }
+          .checkbox .tooltiptextlines3 {
+            font-size: 12px;
+            font-family: Tahoma, sans-serif;
+            visibility: hidden;
+            width: 300px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+            z-index: 1;
+            position: absolute;
+            bottom: 100%;
+            left: 0%;
+            height: 41px;
+            <!-- subtract 46 from height -->
+          }
+        </style>
+        <style>
+          .checkbox:hover .tooltiptextlines1 {
+            visibility: visible;
+          }
+          .checkbox:hover .tooltiptextlines2 {
+            visibility: visible;
+          }
+          .checkbox:hover .tooltiptextlines3 {
+            visibility: visible;
           }
         </style>
         <!-- Zoom Display -->
@@ -85,21 +151,53 @@ angular.module('beamng.apps')
           </button>
         </div>
         <div id="checkboxes" class="checkboxlist">
-          <label for="navMapSmoothZoom" style="position: fixed; top:36px; left:30px;" class="checkbox">Smooth Zoom</label>
+          <label for="navMapSmoothZoom" style="position: fixed; top:36px; left:30px;" class="checkbox">Smooth Zoom
+            <span class="tooltiptextlines2" style="position:fixed; top:2px; left:30px;">
+              With this enabled, the map will smoothly zoom instead of snapping to the next zoom level.
+            </span>
+          </label>
           <input type="checkbox" id="navMapSmoothZoom" style="position: fixed; top:40px; left:10px;" class="checkbox"></input>
-          <label for="navMapDisplayZoom" style="position: fixed; top:66px; left:30px;" class="checkbox">Display Zoom Level</label>
+          <label for="navMapDisplayZoom" style="position: fixed; top:66px; left:30px;" class="checkbox">Display Zoom Level
+            <span class="tooltiptextlines2" style="position:fixed; top:32px; left:30px;">
+              With this enabled, in the bottom left corner it will display the zoom magnification.
+            </span>
+          </label>
           <input type="checkbox" id="navMapDisplayZoom" style="position: fixed; top:70px; left:10px;" class="checkbox"></input>
-          <label for="navMapSpeedTiedZoom" style="position: fixed; top:96px; left:30px;" class="checkbox">Speed Tied Zoom</label>
+          <label for="navMapSpeedTiedZoom" style="position: fixed; top:96px; left:30px;" class="checkbox">Speed Tied Zoom
+            <span class="tooltiptextlines3" style="position:fixed; top:50px; left:30px;">
+              With this enabled, it will change the zoom according to your speed, and will look as if your vehicle is lagging behind the map.
+            </span>
+          </label>
           <input type="checkbox" id="navMapSpeedTiedZoom" style="position: fixed; top:100px; left:10px;" class="checkbox"></input>
-          <label for="navMapElementScaleTiedZoom" style="position: fixed; top:126px; left:30px;" class="checkbox">Scale Map Elements with Zoom</label>
+          <label for="navMapElementScaleTiedZoom" style="position: fixed; top:126px; left:30px;" class="checkbox">Scale Map Elements with Zoom
+            <span class="tooltiptextlines3" style="position:fixed; top:80px; left:30px;">
+              With this enabled, the icons such as your player icon and ai vehicle icons will scale according to the zoom. Helpful for when you're zoomed out extremely far.
+            </span>
+          </label>
           <input type="checkbox" id="ElementScaleTiedZoom" style="position: fixed; top:130px; left:10px;" class="checkbox"></input>
-          <label for="navMapNorthLocked" style="position: fixed; top:156px; left:30px;" class="checkbox">Lock North</label>
+          <label for="navMapNorthLocked" style="position: fixed; top:156px; left:30px;" class="checkbox">Lock North
+            <span class="tooltiptextlines1" style="position:fixed; top:134px; left:30px;">
+              With this enabled, the map will be locked to point north.
+            </span>
+          </label>
           <input type="checkbox" id="navMapNorthLocked" style="position: fixed; top:160px; left:10px;" class="checkbox"></input>
-          <label for="navMapShowGrid" style="position: fixed; top:186px; left:30px;" class="checkbox">Show Grid</label>
+          <label for="navMapShowGrid" style="position: fixed; top:186px; left:30px;" class="checkbox">Show Grid
+            <span class="tooltiptextlines2" style="position:fixed; top:152px; left:30px;">
+              With this enabled, the map will force the grid to show, even over official maps.
+            </span>
+          </label>
           <input type="checkbox" id="navMapShowGrid" style="position: fixed; top:190px; left:10px;" class="checkbox"></input>
-          <label for="navMapCentreOnPlayer" style="position: fixed; top:216px; left:30px;" class="checkbox">Centre On Player</label>
+          <label for="navMapCentreOnPlayer" style="position: fixed; top:216px; left:30px;" class="checkbox">Centre On Player
+            <span class="tooltiptextlines2" style="position:fixed; top:182px; left:30px;">
+              With this enabled, it will focus exactly on the player instead of ahead of the player.
+            </span>
+          </label>
           <input type="checkbox" id="navMapCentreOnPlayer" style="position: fixed; top:220px; left:10px;" class="checkbox"></input>
-          <label for="navMapShowOffScreenVehicles" style="position: fixed; top:246px; left:30px;" class="checkbox">Show Offscreen Vehicles</label>
+          <label for="navMapShowOffScreenVehicles" style="position: fixed; top:246px; left:30px;" class="checkbox">Show Offscreen Vehicles
+            <span class="tooltiptextlines3" style="position:fixed; top:200px; left:30px;">
+              With this enabled, any vehicles that are too far to be seen on the minimap will have an arrow pointing towards it on the border of the map.
+            </span>
+          </label>
           <input type="checkbox" id="navMapShowOffScreenVehicles" style="position: fixed; top:250px; left:10px;" class="checkbox"></input>
         </div>
         <!-- Collectible Display -->
@@ -188,12 +286,6 @@ angular.module('beamng.apps')
         // receive live data from the GE map
         var vehicleShapes = {};
         var lastcontrolID = -1;
-        var xAxis = null;
-        var yAxis = null;
-        var c1 = null;
-        var c2 = null;
-        var c3 = null;
-        var c4 = null;
         var collectableShapes = {};
         // group to store all collectable svgs
         var collGroup;
@@ -795,7 +887,6 @@ angular.module('beamng.apps')
             var ctx = offScreenVehicleCanvas.getContext('2d');
             ctx.clearRect(0, 0, borderWidth, borderHeight);
             svg.style.transform = "scale(-1, -1)"
-            if (yAxis) yAxis.remove();
             // Draw the map elements
             var minX = 999, maxX = -999;
             var minY = 999, maxY = -999;
