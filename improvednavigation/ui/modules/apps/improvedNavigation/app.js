@@ -154,6 +154,112 @@ angular.module('beamng.apps')
             }
         }
         </style>
+        <style>
+          .settingswarning {
+            width:475px;
+            background-color: black;
+            border: yellow;
+            color: #fff;
+            text-align: center;
+            font-family: Tahoma, sans-serif;
+            font size: 10px;
+            position: absolute;
+            bottom: -5%;
+            right: 0%;
+            display: inline-block;
+            opacity: 1;
+          }
+        </style>
+        <style>
+        .settingswarning .tooltiptextlines1 {
+            visibility: hidden;
+            font-size: 12px;
+            font-family: Tahoma, sans-serif;
+            width: 300px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+            border-style: solid;
+            border-color: rgba(250, 255, 94, 1);
+            position: absolute;
+            bottom: -7%;
+            right: 50%;
+            height: 17px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            <!-- subtract 22 from height -->
+          }
+          .settingswarning .tooltiptextlines2 {
+            visibility: hidden;
+            font-size: 12px;
+            font-family: Tahoma, sans-serif;
+            width: 300px;
+            height: 29px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+            border-style: solid;
+            border-color: rgba(250, 255, 94, 1);
+            position: absolute;
+            bottom: -7%;
+            right: 50%;
+            opacity: 0;
+            transition: opacity 0.3s;
+            <!-- subtract 34 from height -->
+          }
+          .settingswarning .tooltiptextlines3 {
+            visibility: hidden;
+            font-size: 12px;
+            font-family: Tahoma, sans-serif;
+            width: 300px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+            border-style: solid;
+            border-color: rgba(250, 255, 94, 1);
+            position: absolute;
+            bottom: -7%;
+            right: 50%;
+            height: 41px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            <!-- subtract 46 from height -->
+          }
+        </style>
+        <style>
+          .settingswarning:hover .tooltiptextlines1:not(:hover) {
+            animation-name:warningFade;
+            animation-duration:0.3s;
+            animation-fill-mode: forwards;
+          }
+          .settingswarning:hover .tooltiptextlines2:not(:hover) {
+            animation-name:warningFade;
+            animation-duration:0.3s;
+            animation-fill-mode: forwards;
+          }
+          .settingswarning:hover .tooltiptextlines3:not(:hover) {
+            animation-name:warningFade;
+            animation-duration:0.3s;
+            animation-fill-mode: forwards;
+          }
+          @keyframes warningFade {
+            from {
+                opacity: 0;
+                visibility: hidden;
+            }
+        
+            to {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+        </style>
         <!-- Zoom Display -->
         <div id="zoomDisplay" style="font-size: 1.2em; padding: 0.2%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; bottom:0px; left:0px">
           {{ zoomMag }}
@@ -171,6 +277,7 @@ angular.module('beamng.apps')
             ⚙
           </button>
         </div>
+        <!-- Settings -->
         <div id="checkboxes" class="checkboxlist">
           <label for="navMapSmoothZoom" style="position: fixed; top:36px; left:30px;" class="checkbox">Smooth Zoom
             <span class="tooltiptextlines2" style="position:fixed; top:2px; left:30px;">
@@ -221,12 +328,19 @@ angular.module('beamng.apps')
           </label>
           <input type="checkbox" id="navMapShowOffScreenVehicles" style="position: fixed; top:250px; left:10px;" class="checkbox"></input>
         </div>
+        <!-- Settings Warning -->
+        <div id="warnings" style="visibility: hidden;">
+          <span class="settingswarning" id="northLockAndShowOffscreenVehicles">Conflict with setting 5 and 8 (hover for more info).
+            <span class="tooltiptextlines3" style="position:fixed; bottom:5%; left:18%;">
+              Having North Lock disabled and Show Offscreen Vehicles enabled will cause them to conflict, Show Offscreen Vehicles will not work as intended.
+            </span>
+          </span>
+        </div>
         <!-- Collectible Display -->
         <div ng-if="collectableTotal > 0" style="font-size: 1.2em; padding: 1%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; top:15px; left: 15px">
           <md-icon style="margin-bottom: 3px;" md-svg-src="{{ '/ui/modules/apps/Navigation/snowman.svg' }}" />
           {{ collectableCurrent + '/' + collectableTotal }}
         </div>
-
         <style>
           .bounce {
             animation: bounce 1s cubic-bezier(0.4,0.1,0.2,1) both;
@@ -253,6 +367,7 @@ angular.module('beamng.apps')
         var offScreenVehicleCanvas = document.getElementById("overflowVehiclesCanvas");
         var routeCanvas = document.getElementById('routeCanvas');
         var routeCanvasWrapper = document.getElementById('routeCanvasWrapper');
+        var warningsPanel = document.getElementById('warnings');
 
         var settingsCheckBoxes = document.getElementById('checkboxes');
 
@@ -281,6 +396,11 @@ angular.module('beamng.apps')
             document.getElementById(configKeys[i]).checked = true;
           } else {
             document.getElementById(configKeys[i]).checked = false;
+          }
+        }
+        if(config[4] == 'false') { // if north lock is disabled
+          if(config[7] == 'true') { // if show offscreen vehicles is enabled
+            document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
           }
         }
         
@@ -338,10 +458,12 @@ angular.module('beamng.apps')
             ctx.fillText("Navigation Settings", 10, 28)
             // Draw Checkboxes
             settingsCheckBoxes.style.visibility = "visible";
+            warningsPanel.style.visibility = "visible";
             settingsIsOpen = true;
           } else {
             ctx.clearRect(0, 0, settingsCanvas.width, settingsCanvas.height)
             settingsCheckBoxes.style.visibility = "hidden";
+            warningsPanel.style.visibility = "hidden";
             settingsIsOpen = false;
           }
         }
@@ -864,6 +986,13 @@ angular.module('beamng.apps')
                   if(i == 3 || i == 5 || i == 7) {
                     setupMap(navMapData);
                   }
+                  if(config[4] == 'false') { // if north lock is disabled
+                    if(config[7] == 'true') { // if show offscreen vehicles is enabled
+                      document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
+                    }
+                  } else { // if north lock is enabled
+                    document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '0';
+                  }
                 }
               } else {
                 if(config[i] != 'false') {
@@ -877,6 +1006,15 @@ angular.module('beamng.apps')
                   })
                   if(i == 3 || i == 5 || i == 7) {
                     setupMap(navMapData);
+                  }
+                  if(config[4] == 'true') { // if north lock is enabled
+                    document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '0';
+                  } else { // if north lock is disabled
+                    if(config[7] == 'false') { // if show offscreen vehicles is disabled
+                      document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '0';
+                    } else { // if show offscreen vehicles is enabled
+                      document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
+                    }
                   }
                 }
               }
