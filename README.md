@@ -16,8 +16,6 @@ Features:
 - Toggle Grid (0.2.1)
 - Scale Map Elements with Zoom (0.2.1)
 - Toggle Speed Tied Zoom (0.2.1)
-
-Alpha Features (Features not on the forum version):
 - Show Offscreen Vehicles (0.3.0.1)
 - Centre on player (0.3.0.1)
 - Show Grid will now show even if the map has a background (0.3.0.2)
