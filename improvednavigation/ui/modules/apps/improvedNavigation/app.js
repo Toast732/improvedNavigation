@@ -341,16 +341,15 @@ angular.module('beamng.apps')
         var bgImage = null;
         var red = true;
 
-        var filterStrength = 20;
-        var frameTime = 0, lastLoop = new Date, thisLoop;
-
-        // Setting Strings
+        // Settings
         var boolConfigTitles = ['Smooth Zoom', 'Display Zoom Level', 'Speed Tied Zoom', 'Scale Map Elements with Zoom', 'Lock North', 'Show Grid', 'Centre On Player', 'Show Offscreen Vehicles']
         var boolConfigTooltips = [`With this enabled, the map will smoothly zoom instead of snapping to the next zoom level.`, `With this enabled, in the bottom left corner it will display the zoom magnification.`, `With this enabled, it will change the zoom according to your speed, and will look as if your vehicle is lagging behind the map.`, `With this enabled, the icons such as your player icon and ai vehicle icons will scale according to the zoom. Helpful for when you're zoomed out extremely far.`, `With this enabled, the map will be locked to point north.`, `With this enabled, the map will force the grid to show, even over official maps.`, `With this enabled, it will focus exactly on the player instead of ahead of the player.`, `With this enabled, any vehicles that are too far to be seen on the minimap will have an arrow pointing towards it on the border of the map.`]
-        var boolConfigStartY = 50; // where it first starts showing settings on the y level
+        var boolConfigStartY = 55; // where it first starts showing settings on the y level
         var boolConfigOffsetY = 25; // spacing between each setting
         var boolConfigTitleSize = 17; // the size of the text
         var boolConfigTitleFont = 'Tahoma, sans-serif';
+        var settingsMenuBackground = 'rgba(35, 35, 35, 1)';
+        var settingsMenuPanels = 'rgba(55, 55, 55, 1)';
         // load settings
         var boolConfigClicked = [];
         var boolConfig = [];
@@ -455,25 +454,40 @@ angular.module('beamng.apps')
           var ctx = settingsCanvas.getContext('2d');
           if(settingsIsOpen == false) {
             // Draw Background
-            ctx.fillStyle = "rgba(50, 50, 50, 1)";
+            ctx.fillStyle = settingsMenuBackground;
             ctx.fillRect(0, 0, settingsCanvas.width, settingsCanvas.height);
-            // Draw Title
-            ctx.font = "28px Tahoma, sans-serif";
-            ctx.fillStyle = "white";
-            ctx.fillText("Navigation Settings", 10, 28)
             // Draw Settings
             ctx.font = boolConfigTitleSize + 'px ' + boolConfigTitleFont;
             ctx.fillStyle = "white";
             for(var i=0;i<boolConfig.length;i++) {
               ctx.fillText(boolConfigTitles[i], settingsCanvas.width - (getTextWidth(boolConfigTitles[i], boolConfigTitleFont, boolConfigTitleSize) + 65), (boolConfigStartY + 4.5) + (boolConfigOffsetY + 0.25) * i);
             }
+            // Draw UI Lines
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = "2";
+            ctx.moveTo(1, 37);
+            ctx.lineTo(settingsCanvas.width - 1, 37);
+            ctx.stroke();
+            ctx.moveTo(165, 37);
+            ctx.lineTo(165, settingsCanvas.height - 1);
+            ctx.stroke();
+            ctx.moveTo(1, settingsCanvas.height - 26);
+            ctx.lineTo(settingsCanvas.width - 1, settingsCanvas.height - 26);
+            ctx.stroke();
+            // Draw UI Panels
+            ctx.fillStyle = settingsMenuPanels;
+            ctx.fillRect(1, 1, settingsCanvas.width - 1, 35)
+            ctx.fillRect(1, settingsCanvas.height - 25, settingsCanvas.width - 1, settingsCanvas.height - 1)
+            // Draw Title
+            ctx.font = "28px Tahoma, sans-serif";
+            ctx.fillStyle = "white";
+            ctx.fillText("Navigation Settings", 10, 28)
             // Other
             warningsPanel.style.visibility = "visible";
             document.getElementById('openMap').style.opacity = '0';
             settingsIsOpen = true;
           } else {
             ctx.clearRect(0, 0, settingsCanvas.width, settingsCanvas.height)
-            settingsCheckBoxes.style.visibility = "hidden";
             warningsPanel.style.visibility = "hidden";
             document.getElementById('openMap').style.opacity = '1';
             settingsIsOpen = false;
@@ -752,7 +766,7 @@ angular.module('beamng.apps')
           }
         }
 
-        function centerMap(obj) {
+        async function centerMap(obj) {
           var speedZoomMultiplier = 2;
 
           // added in 0.3.1, due to obj.vel being removed in version 0.24
@@ -799,7 +813,6 @@ angular.module('beamng.apps')
             var zoomY = 0;
             var zoom = 0;
           }
-
           // center on what?
           var focusX = -obj.pos[0] / mapScale;
           var focusY = obj.pos[1] / mapScale;
@@ -884,9 +897,6 @@ angular.module('beamng.apps')
               updatePlayerShape(data.controlID, data); // update shape of new vehicle
               lastcontrolID = data.controlID;
             }
-            var thisFrameTime = (thisLoop=new Date) - lastLoop;
-            frameTime+= (thisFrameTime - frameTime) / filterStrength;
-            lastLoop = thisLoop;
             // get size of canvas
             var borderWidth = offScreenVehicleCanvas.width;
             var borderHeight = offScreenVehicleCanvas.height;
@@ -1032,8 +1042,8 @@ angular.module('beamng.apps')
           } else {
             var ctx = settingsCanvas.getContext('2d');
             ctx.beginPath();
-            ctx.fillStyle = "rgba(50, 50, 50, 1)";
-            ctx.fillRect(settingsCanvas.width - 60, 0, 500, 500);
+            ctx.fillStyle = settingsMenuBackground;
+            ctx.fillRect(settingsCanvas.width - 60, 40, settingsCanvas.width, settingsCanvas.height - 73);
             ctx.fill();
             for(i=0;boolConfigKeys.length>i;i++){
               for(var xO=0;xO<20;xO++) {
@@ -1043,7 +1053,7 @@ angular.module('beamng.apps')
                 } else {
                   ctx.fillStyle = "rgba(125, 125, 125, 1)";
                 }
-                ctx.arc(settingsCanvas.width - 25 - xO, 50 + 25 * i, 10, 0, 2 * Math.PI);
+                ctx.arc(settingsCanvas.width - 25 - xO, boolConfigStartY + boolConfigOffsetY * i, 10, 0, 2 * Math.PI);
                 ctx.fill();
               }
               ctx.beginPath();
@@ -1112,9 +1122,6 @@ angular.module('beamng.apps')
             }
           }
         }
-        setInterval(function(){
-          console.log((1000/frameTime).toFixed(1) + " fps");
-        },1000);
         function getAngle(originX, originY, targetX, targetY) {
           var dx = originX - targetX;
           var dy = originY - targetY;
@@ -1288,7 +1295,6 @@ angular.module('beamng.apps')
             drawRoads(0.9, 1)
             mapReady = true;
           }
-
         }
 
         async function setupStaticMarkers(data) {
@@ -1318,12 +1324,17 @@ angular.module('beamng.apps')
             })
             // store all collectable svgs
             **/
+           if(boolConfig[3] == 'true') {
+             var r = 8 + mapZoom / -500 * 0.151;
+           } else {
+             var r = 8;
+           }
 
             let style = "transform: translate3d("+(-data.items[i+0])+"px,"+(data.items[i+1])+"px,"
             let marker = hu('<circle>', svg)
             marker.attr('cx', -data.items[i+0])
             marker.attr('cy', data.items[i+1])
-            marker.attr('r', 8)
+            marker.attr('r', r)
             marker.attr('fill', '#2C5CFF')
             marker.attr('style', style)
             marker.css('stroke', '#FFFFFF')
