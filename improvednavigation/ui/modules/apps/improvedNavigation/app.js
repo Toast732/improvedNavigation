@@ -409,6 +409,16 @@ angular.module('beamng.apps')
             document.getElementById(configKeys[i]).checked = false;
           }
         }
+        if(config[4] == 'false' && config[7] == 'true') {
+          document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
+        } else {
+          document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '0';
+        }
+        if(config[2] == 'true' && config[4] == 'true') {
+          document.getElementById('speedTiedZoomWarning').style.opacity = '1';
+        } else {
+          document.getElementById('speedTiedZoomWarning').style.opacity = '0';
+        }
         
         var baseMapZoomSpeed = 25;
         var mapZoomSpeed = 0;
