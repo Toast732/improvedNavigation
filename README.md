@@ -1,5 +1,5 @@
-# improvedNavigation
-My Mod "Improved Navigation Map" for beamng.drive
+# Improved Navigation Mod
+The Mod "Improved Navigation Map" for beamng.drive
 
 Mod on the forums: https://www.beamng.com/resources/improved-navigation-map.19983/
 
@@ -33,5 +33,5 @@ How install this version:
 
 - Download the zip
 - Extract the mod
-- go in two folders, and move improvedNavigation to %localappdata%/0.23/mods/unpacked/
+- go in two folders, and move improvedNavigation to %localappdata%/0.24/mods/unpacked/
 - enable the mod in game, may require you to relaunch the game to see it in the mod list
