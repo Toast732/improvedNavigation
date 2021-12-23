@@ -346,6 +346,11 @@ angular.module('beamng.apps')
           <md-icon style="margin-bottom: 3px;" md-svg-src="{{ '/ui/modules/apps/Navigation/snowman.svg' }}" />
           {{ collectableCurrent + '/' + collectableTotal }}
         </div>
+
+        <div id="openMap" ng-click="openBigMap()" style="cursor: pointer; position: absolute; top: 0; background-color:rgba(0, 0, 0, 0.6)">
+          <md-icon class="material-icons" style="color:rgb(255, 103, 0, 128); margin: 0.1em">map</md-icon>
+        </div>
+
         <style>
           .bounce {
             animation: bounce 1s cubic-bezier(0.4,0.1,0.2,1) both;
@@ -361,6 +366,7 @@ angular.module('beamng.apps')
       replace: true,
       restrict: 'EA',
       link: function (scope, element, attrs) {
+
         var root = element[0];
         var mapcontainer = root.children[0].children[0];
         var svg = mapcontainer.children[0]; 
@@ -401,16 +407,6 @@ angular.module('beamng.apps')
             document.getElementById(configKeys[i]).checked = true;
           } else {
             document.getElementById(configKeys[i]).checked = false;
-          }
-        }
-        if(config[4] == 'false') { // if north lock is disabled
-          if(config[7] == 'true') { // if show offscreen vehicles is enabled
-            document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
-          }
-        }
-        if(config[2] == 'true') { // if speed tied zoom is enabled
-          if(config[4] == 'false') { // if lock north is disabled
-            document.getElementById('speedTiedZoomWarning').style.opacity = '1';
           }
         }
         
@@ -472,11 +468,13 @@ angular.module('beamng.apps')
             // Draw Checkboxes
             settingsCheckBoxes.style.visibility = "visible";
             warningsPanel.style.visibility = "visible";
+            document.getElementById('openMap').style.opacity = '0';
             settingsIsOpen = true;
           } else {
             ctx.clearRect(0, 0, settingsCanvas.width, settingsCanvas.height)
             settingsCheckBoxes.style.visibility = "hidden";
             warningsPanel.style.visibility = "hidden";
+            document.getElementById('openMap').style.opacity = '1';
             settingsIsOpen = false;
           }
         }
@@ -754,7 +752,6 @@ angular.module('beamng.apps')
         }
 
         function centerMap(obj) {
-          console.log(obj.rot)
           var speedZoomMultiplier = 2;
 
           // added in 0.3.1, due to obj.vel being removed in version 0.24
@@ -1264,6 +1261,57 @@ angular.module('beamng.apps')
 
         }
 
+        async function setupStaticMarkers(data) {
+          if(data.key === undefined)
+            return
+          if(staticMarkersDict[data.key] === undefined) {
+            staticMarkersDict[data.key] = {}
+          }
+          let dict = staticMarkersDict[data.key]
+          var mapSize = viewParams[2]
+
+          // remove any existing collectable svgs
+          for (var key in dict) {
+            dict[key].marker.remove()
+          }
+          markerGroup = hu('<g>', svg)
+          // draw collectable svgs
+          for(var i=0; i<data.items.length; i+=4) {
+            /**
+            let marker = hu('<image>', markerGroup)
+            let icon = '/ui/modules/apps/navigation/missionIcons/'+data.items[i+3]+'.svg'
+            marker.attr({
+              x: -25, y:-25,
+              width: 50, height: 50,
+              style: style + "0px);",
+              'xlink:href': icon
+            })
+            // store all collectable svgs
+            **/
+
+            let style = "transform: translate3d("+(-data.items[i+0])+"px,"+(data.items[i+1])+"px,"
+            let marker = hu('<circle>', svg)
+            marker.attr('cx', -data.items[i+0])
+            marker.attr('cy', data.items[i+1])
+            marker.attr('r', 8)
+            marker.attr('fill', '#2C5CFF')
+            marker.attr('style', style)
+            marker.css('stroke', '#FFFFFF')
+            marker.css('stroke-width', '3px')
+            //marker.attr('visibility', 'hidden')
+
+
+            dict[i/4.0] = {
+              marker: marker,
+
+              screenX: -data.items[i+0],
+              screenY: data.items[i+1],
+              visible: false
+            }
+          }
+
+        }
+
         // need to draw collectables after roads have been drawn
         function setupCollectables(data) {
           var mapSize = viewParams[2];
@@ -1310,9 +1358,14 @@ angular.module('beamng.apps')
           }
         };
 
-        bngApi.engineLua('extensions.ui_uiNavi.requestUIDashboardMap()');
+        scope.openBigMap = function() {
+          bngApi.engineLua(`if freeroam_bigMapMode then freeroam_bigMapMode.enterBigMap() end`)
+        }
 
-        bngApi.engineLua(`extensions.core_collectables.sendUIState()`);
+        bngApi.engineLua('extensions.ui_uiNavi.requestUIDashboardMap()')
+
+        bngApi.engineLua(`extensions.core_collectables.sendUIState()`)
+        bngApi.engineLua(`if gameplay_missions_missionEnter then gameplay_missions_missionEnter.sendMissionLocationsToMinimap() end`)
 
       }
     };
