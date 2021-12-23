@@ -21,6 +21,11 @@ Features:
 - Show Grid will now show even if the map has a background (0.3.0.2)
 - Added tooltips to settings (0.3.0.9)
 
+Featured currently only in github version:
+- Support for version 0.24 (0.3.1.1)
+- Performance Improvements over default (0.3.1.2)
+- New features added to the map in 0.24 (0.3.1.2)
+
 Video of the mod:
 https://www.youtube.com/watch?v=H5UTOlVwXvA
 
