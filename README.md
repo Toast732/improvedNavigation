@@ -33,5 +33,5 @@ How install this version:
 
 - Download the zip
 - Extract the mod
-- go in two folders, and move improvedNavigation to %localappdata%/0.23/mods/unpacked/
+- go in two folders, and move improvedNavigation to %localappdata%/0.24/mods/unpacked/
 - enable the mod in game, may require you to relaunch the game to see it in the mod list
