@@ -20,6 +20,7 @@ Features:
 - Centre on player (0.3.0.1)
 - Show Grid will now show even if the map has a background (0.3.0.2)
 - Added tooltips to settings (0.3.0.9)
+
 Featured currently only in github version:
 - Support for version 0.24 (0.3.0.1)
 - Performance Improvements over default (0.3.0.2)
