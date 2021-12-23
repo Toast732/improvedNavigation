@@ -1,5 +1,5 @@
-# improvedNavigation
-My Mod "Improved Navigation Map" for beamng.drive
+# Improved Navigation Mod
+The Mod "Improved Navigation Map" for beamng.drive
 
 Mod on the forums: https://www.beamng.com/resources/improved-navigation-map.19983/
 
