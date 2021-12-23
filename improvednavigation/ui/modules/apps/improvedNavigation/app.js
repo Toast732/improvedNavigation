@@ -55,11 +55,10 @@ angular.module('beamng.apps')
         <style>
           .checkbox {
             color: white;
-            font-size: 20px;
+            font-size: 17px;
             font-family: Tahoma, sans-serif;
             position: relative;
             display: inline-block;
-            
           }
         </style>
         <style>
@@ -277,57 +276,6 @@ angular.module('beamng.apps')
             ⚙
           </button>
         </div>
-        <!-- Settings -->
-        <div id="checkboxes" class="checkboxlist">
-          <label for="navMapSmoothZoom" style="position: fixed; top:36px; left:30px;" class="checkbox">Smooth Zoom
-            <span class="tooltiptextlines2" style="position:fixed; top:2px; left:30px;">
-              With this enabled, the map will smoothly zoom instead of snapping to the next zoom level.
-            </span>
-          </label>
-          <input type="checkbox" id="navMapSmoothZoom" style="position: fixed; top:40px; left:10px;" class="checkbox"></input>
-          <label for="navMapDisplayZoom" style="position: fixed; top:66px; left:30px;" class="checkbox">Display Zoom Level
-            <span class="tooltiptextlines2" style="position:fixed; top:32px; left:30px;">
-              With this enabled, in the bottom left corner it will display the zoom magnification.
-            </span>
-          </label>
-          <input type="checkbox" id="navMapDisplayZoom" style="position: fixed; top:70px; left:10px;" class="checkbox"></input>
-          <label for="navMapSpeedTiedZoom" style="position: fixed; top:96px; left:30px;" class="checkbox">Speed Tied Zoom
-            <span class="tooltiptextlines3" style="position:fixed; top:50px; left:30px;">
-              With this enabled, it will change the zoom according to your speed, and will look as if your vehicle is lagging behind the map.
-            </span>
-          </label>
-          <input type="checkbox" id="navMapSpeedTiedZoom" style="position: fixed; top:100px; left:10px;" class="checkbox"></input>
-          <label for="navMapElementScaleTiedZoom" style="position: fixed; top:126px; left:30px;" class="checkbox">Scale Map Elements with Zoom
-            <span class="tooltiptextlines3" style="position:fixed; top:80px; left:30px;">
-              With this enabled, the icons such as your player icon and ai vehicle icons will scale according to the zoom. Helpful for when you're zoomed out extremely far.
-            </span>
-          </label>
-          <input type="checkbox" id="ElementScaleTiedZoom" style="position: fixed; top:130px; left:10px;" class="checkbox"></input>
-          <label for="navMapNorthLocked" style="position: fixed; top:156px; left:30px;" class="checkbox">Lock North
-            <span class="tooltiptextlines1" style="position:fixed; top:134px; left:30px;">
-              With this enabled, the map will be locked to point north.
-            </span>
-          </label>
-          <input type="checkbox" id="navMapNorthLocked" style="position: fixed; top:160px; left:10px;" class="checkbox"></input>
-          <label for="navMapShowGrid" style="position: fixed; top:186px; left:30px;" class="checkbox">Show Grid
-            <span class="tooltiptextlines2" style="position:fixed; top:152px; left:30px;">
-              With this enabled, the map will force the grid to show, even over official maps.
-            </span>
-          </label>
-          <input type="checkbox" id="navMapShowGrid" style="position: fixed; top:190px; left:10px;" class="checkbox"></input>
-          <label for="navMapCentreOnPlayer" style="position: fixed; top:216px; left:30px;" class="checkbox">Centre On Player
-            <span class="tooltiptextlines2" style="position:fixed; top:182px; left:30px;">
-              With this enabled, it will focus exactly on the player instead of ahead of the player.
-            </span>
-          </label>
-          <input type="checkbox" id="navMapCentreOnPlayer" style="position: fixed; top:220px; left:10px;" class="checkbox"></input>
-          <label for="navMapShowOffScreenVehicles" style="position: fixed; top:246px; left:30px;" class="checkbox">Show Offscreen Vehicles
-            <span class="tooltiptextlines3" style="position:fixed; top:200px; left:30px;">
-              With this enabled, any vehicles that are too far to be seen on the minimap will have an arrow pointing towards it on the border of the map.
-            </span>
-          </label>
-          <input type="checkbox" id="navMapShowOffScreenVehicles" style="position: fixed; top:250px; left:10px;" class="checkbox"></input>
-        </div>
         <!-- Settings Warning -->
         <div id="warnings" style="visibility: hidden;">
           <span class="settingswarning" id="northLockAndShowOffscreenVehicles">Conflict with setting 5 and 8 (hover for more info).
@@ -392,29 +340,33 @@ angular.module('beamng.apps')
         var navMapData = null;
         var bgImage = null;
         var red = true;
-        
+
+        // Setting Strings
+        var boolConfigTitles = ['Smooth Zoom', 'Display Zoom Level', 'Speed Tied Zoom', 'Scale Map Elements with Zoom', 'Lock North', 'Show Grid', 'Centre On Player', 'Show Offscreen Vehicles']
+        var boolConfigTooltips = [`With this enabled, the map will smoothly zoom instead of snapping to the next zoom level.`, `With this enabled, in the bottom left corner it will display the zoom magnification.`, `With this enabled, it will change the zoom according to your speed, and will look as if your vehicle is lagging behind the map.`, `With this enabled, the icons such as your player icon and ai vehicle icons will scale according to the zoom. Helpful for when you're zoomed out extremely far.`, `With this enabled, the map will be locked to point north.`, `With this enabled, the map will force the grid to show, even over official maps.`, `With this enabled, it will focus exactly on the player instead of ahead of the player.`, `With this enabled, any vehicles that are too far to be seen on the minimap will have an arrow pointing towards it on the border of the map.`]
+        var boolConfigStartY = 50; // where it first starts showing settings on the y level
+        var boolConfigOffsetY = 25; // spacing between each setting
+        var boolConfigTitleSize = 17; // the size of the text
+        var boolConfigTitleFont = 'Tahoma, sans-serif';
         // load settings
-        var config = [];
-        var configDefaults = [true, true, true, true, false, true, true, true];
-        var configKeys = ['navMapSmoothZoom', 'navMapDisplayZoom', 'navMapSpeedTiedZoom', 'ElementScaleTiedZoom', 'navMapNorthLocked', 'navMapShowGrid', 'navMapCentreOnPlayer', 'navMapShowOffScreenVehicles'];
-        for(i=0;configKeys.length>i;i++){
-          config[i] = localStorage.getItem(configKeys[i]);
-          if(!config[i]) { // if the setting does not exist, then create it
-            localStorage.setItem(configKeys[i], configDefaults[i]);
-            config[i] = localStorage.getItem(configKeys[i]);
-          }
-          if(config[i] == "true") {
-            document.getElementById(configKeys[i]).checked = true;
-          } else {
-            document.getElementById(configKeys[i]).checked = false;
+        var boolConfigClicked = [];
+        var boolConfig = [];
+        var boolConfigDefaults = [true, true, true, true, false, true, true, true];
+        var boolConfigKeys = ['navMapSmoothZoom', 'navMapDisplayZoom', 'navMapSpeedTiedZoom', 'ElementScaleTiedZoom', 'navMapNorthLocked', 'navMapShowGrid', 'navMapCentreOnPlayer', 'navMapShowOffScreenVehicles'];
+        for(i=0;boolConfigKeys.length>i;i++){
+          boolConfig[i] = localStorage.getItem(boolConfigKeys[i]);
+          if(!boolConfig[i]) { // if the setting does not exist, then create it
+            localStorage.setItem(boolConfigKeys[i], boolConfigDefaults[i]);
+            boolConfig[i] = localStorage.getItem(boolConfigKeys[i]);
+            boolConfigClicked[i] = true;
           }
         }
-        if(config[4] == 'false' && config[7] == 'true') {
+        if(boolConfig[4] == 'false' && boolConfig[7] == 'true') {
           document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
         } else {
           document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '0';
         }
-        if(config[2] == 'true' && config[4] == 'true') {
+        if(boolConfig[2] == 'true' && boolConfig[4] == 'true') {
           document.getElementById('speedTiedZoomWarning').style.opacity = '1';
         } else {
           document.getElementById('speedTiedZoomWarning').style.opacity = '0';
@@ -454,12 +406,43 @@ angular.module('beamng.apps')
         var activeVisibilitySlot = 1;
 
         var quad = null;//new Quadtree({x:0, y:0, width:1, height:1});
-
+        settingsCanvas.addEventListener('click', function(event) {
+          var x = event.pageX - settingsCanvas.getBoundingClientRect().left;
+          var y = event.pageY - settingsCanvas.getBoundingClientRect().top;
+          for(var i=0;boolConfig.length>i;i++) {
+            if(boolConfig[i] == 'true') {
+              if(Math.sqrt(((settingsCanvas.width - 25) - x)*((settingsCanvas.width - 25) - x) + ((50 + 25 * i) - y)*((50 + 25 * i) - y)) < 10) {
+                boolConfig[i] = 'false';
+                boolConfigClicked[i] = true;
+              }
+            } else {
+              if(Math.sqrt(((settingsCanvas.width - 45) - x)*((settingsCanvas.width - 45) - x) + ((50 + 25 * i) - y)*((50 + 25 * i) - y)) < 10) {
+                boolConfig[i] = 'true';
+                boolConfigClicked[i] = true;
+              }
+            }
+          }
+        })
         function sleep(ms) {
           return new Promise(resolve => setTimeout(resolve, ms));
         }
+
+        function getTextWidth(text, fontName, fontSize) {
+          if(getTextWidth.c == undefined) {
+            getTextWidth.c=document.createElement('canvas');
+            getTextWidth.ctx=getTextWidth.c.getContext('2d');
+          }
+          var fontSpecs = fontSize + 'px ' + fontName;
+          if(getTextWidth.ctx.font !== fontSpecs) {
+            getTextWidth.ctx.font = fontSpecs;
+          }
+          return getTextWidth.ctx.measureText(text).width;
+        }
+
         // ability to interact
         function settingsMenu() {
+
+
           // make sure not to change visiblity slot
           activeVisibilitySlot--;
           if (activeVisibilitySlot >= visibilitySlots.length) activeVisibilitySlot = 0;
@@ -475,8 +458,13 @@ angular.module('beamng.apps')
             ctx.font = "28px Tahoma, sans-serif";
             ctx.fillStyle = "white";
             ctx.fillText("Navigation Settings", 10, 28)
-            // Draw Checkboxes
-            settingsCheckBoxes.style.visibility = "visible";
+            // Draw Settings
+            ctx.font = boolConfigTitleSize + 'px ' + boolConfigTitleFont;
+            ctx.fillStyle = "white";
+            for(var i=0;i<boolConfig.length;i++) {
+              ctx.fillText(boolConfigTitles[i], settingsCanvas.width - (getTextWidth(boolConfigTitles[i], boolConfigTitleFont, boolConfigTitleSize) + 65), (boolConfigStartY + 4.5) + (boolConfigOffsetY + 0.25) * i);
+            }
+            // Other
             warningsPanel.style.visibility = "visible";
             document.getElementById('openMap').style.opacity = '0';
             settingsIsOpen = true;
@@ -499,7 +487,7 @@ angular.module('beamng.apps')
         element[0].addEventListener('contextmenu', function(e) {
           zoomSlot++;
           mapZoomSlot = zoomSlot < zoomStates.length ? zoomSlot : zoomSlot = 0;
-          if (config[0] == 'true') {
+          if (boolConfig[0] == 'true') {
             async function animatedZoom() {
               mapZoomSpeed = Math.ceil(baseMapZoomSpeed*(zoomStates[mapZoomSlot]-mapZoom)/zoomStates[baseZoomLevel])
               if (mapZoom > zoomStates[mapZoomSlot] )
@@ -534,13 +522,13 @@ angular.module('beamng.apps')
                   await sleep(15);
                 }
               }
-              if(config[3] == 'true') {
+              if(boolConfig[3] == 'true') {
                 setupMap(navMapData);
               }
             }
             animatedZoom();
           } else {
-            if(config[3] == 'true') {
+            if(boolConfig[3] == 'true') {
               setupMap(navMapData);
             }
           }
@@ -765,8 +753,8 @@ angular.module('beamng.apps')
           var speedZoomMultiplier = 2;
 
           // added in 0.3.1, due to obj.vel being removed in version 0.24
-          if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
-            if(config[4] == "true") { // if lock north is enabled
+          if(zoomStates[zoomSlot] <= 0 && boolConfig[2] == "true") { // removes speed based zoom if you are zoomed too far in
+            if(boolConfig[4] == "true") { // if lock north is enabled
               obj.dir = [
                 0, // north, [0]
                 0, // east, [1]
@@ -814,17 +802,17 @@ angular.module('beamng.apps')
           var focusY = obj.pos[1] / mapScale;
           var borderWidth = root.children[0].clientWidth;
           var borderHeight = root.children[0].clientHeight;
-          var degreeNorth = config[4] == 'false' ? (obj.rot - 90) : 90;
+          var degreeNorth = boolConfig[4] == 'false' ? (obj.rot - 90) : 90;
           var npx = - Math.cos(degreeNorth * Math.PI / 180) * borderWidth * 0.75;
           var npy = borderHeight * 0.5 - Math.sin(degreeNorth * Math.PI / 180) * borderHeight * 0.75;
           var translateX = (((viewParams[0]) + borderWidth/2 - 10) + focusX + 10 + (zoomX / 2));
-          if (config[6] == 'true') { // if centre on player is enabled
+          if (boolConfig[6] == 'true') { // if centre on player is enabled
             var translateY = (((viewParams[1]) + borderHeight/2) + focusY + (zoomY / 2)); // translate map with speed
           } else {
             var translateY = (((viewParams[1]) + borderHeight/1.5) + focusY + (zoomY / 2)); // translate map with speed
           }
           if(settingsIsOpen == false) { // is settings menu closed?
-            if(config[4] == 'false') { // if lock north is disabled
+            if(boolConfig[4] == 'false') { // if lock north is disabled
               mapcontainer.style.transform = "translate3d(" + translateX + "px, " + translateY + "px," + (mapZoom - (zoom * speedZoomMultiplier)) + "px)" + "rotateX(" + 0 + (zoom / 10) + "deg)" + "rotateZ(" + (180 + Utils.roundDec(obj.rot, 2)) + "deg)"
               mapcontainer.style.transformOrigin = (((viewParams[0] * -1)) - focusX) + "px " + ((viewParams[1] * -1) - focusY) + "px"
             } else { // if lock north is enabled
@@ -910,7 +898,7 @@ angular.module('beamng.apps')
                 var px = -o.pos[0] / mapScale;
                 var py = o.pos[1] / mapScale;
                 var rot = Math.floor(-o.rot);
-                if(config[3] == 'true') { // if the user wants map elements to scale with map zoom
+                if(boolConfig[3] == 'true') { // if the user wants map elements to scale with map zoom
                   var iconScale = 1 + mapZoom / -500 * 0.151;
                 } else {
                   var iconScale = 1;
@@ -922,11 +910,11 @@ angular.module('beamng.apps')
                 if (o.marker == 'hidden') {
                   show = 0;
                 }
-                if(config[7] == 'true') { // if show offscreen vehicles is enabled
+                if(boolConfig[7] == 'true') { // if show offscreen vehicles is enabled
                   if(o != p) {
                     // check if vehicle is visible by the player
                     var speedZoomMultiplier = 2;
-                    if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
+                    if(zoomStates[zoomSlot] <= 0 && boolConfig[2] == "true") { // removes speed based zoom if you are zoomed too far in
                       var zoom = (mapZoom - (Math.min(1 + (p.speed * 3.6) * 1.5, 200) * speedZoomMultiplier));
                     } else {
                       var zoom = mapZoom
@@ -935,7 +923,7 @@ angular.module('beamng.apps')
                     var visibleAreaHeight = borderHeight + 100 * (zoom/-500)*mapScale;
                     var dX = (p.pos[0] - o.pos[0])
                     var dY = (p.pos[1] - o.pos[1])
-                    if (config[6] == 'true') { // if centre on player is enabled
+                    if (boolConfig[6] == 'true') { // if centre on player is enabled
                       var borderSizeDiv = 2;
                       var subAmountY = 0;
                     } else {
@@ -952,7 +940,7 @@ angular.module('beamng.apps')
                     if(dX > visibleAreaWidth/2 - (27.5*mapScale) * scalingRatioWidth|| dY > (visibleAreaHeight/2 - 27.5 * scalingRatioHeight) - subAmountY|| dX < -visibleAreaWidth/2 + (27.5*mapScale) * scalingRatioWidth|| dY < (-visibleAreaHeight/2 + 27.5 * scalingRatioHeight) - subAmountY/2) {
                       var r = (borderWidth+borderHeight)/2; // radius
                       // angle, oversized vehicle y, oversized vehicle x
-                      var angle = config[4] == 'false' ? (p.rot - (-getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) - 135)* 180 / Math.PI - 180) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) * 180 / Math.PI - 180;
+                      var angle = boolConfig[4] == 'false' ? (p.rot - (-getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) - 135)* 180 / Math.PI - 180) : getAngle(-p.pos[0]/mapScale, p.pos[1]/mapScale, -o.pos[0]/mapScale, o.pos[1]/mapScale) * 180 / Math.PI - 180;
                       var ovy = (r * Math.sin(Math.PI * 2 * angle / 360)) + borderHeight/borderSizeDiv
                       var ovx = (r * Math.cos(Math.PI * 2 * angle / 360)) + borderWidth/2
 
@@ -1029,18 +1017,41 @@ angular.module('beamng.apps')
               }
             }
             // zoom magnification display
-            if (config[1] == 'true') {
+            if (boolConfig[1] == 'true') {
               document.getElementById('zoomDisplay').style.visibility = "visible";
               scope.zoomMag = zoomMags[zoomSlot] + "x zoom"
             } else {
               document.getElementById('zoomDisplay').style.visibility = "hidden";
             }
           } else {
-            for(i=0;configKeys.length>i;i++){
-              if(document.getElementById(configKeys[i]).checked == true) {
-                if(config[i] != 'true') {
-                  config[i] = 'true'
-                  localStorage.setItem(configKeys[i], 'true');
+            var ctx = settingsCanvas.getContext('2d');
+            ctx.beginPath();
+            ctx.fillStyle = "rgba(50, 50, 50, 1)";
+            ctx.fillRect(settingsCanvas.width - 60, 0, 500, 500);
+            ctx.fill();
+            for(i=0;boolConfigKeys.length>i;i++){
+              for(var xO=0;xO<20;xO++) {
+                ctx.beginPath();
+                if(boolConfig[i] == 'true') {
+                  ctx.fillStyle = "rgba(255, 103, 0, 1)";
+                } else {
+                  ctx.fillStyle = "rgba(125, 125, 125, 1)";
+                }
+                ctx.arc(settingsCanvas.width - 25 - xO, 50 + 25 * i, 10, 0, 2 * Math.PI);
+                ctx.fill();
+              }
+              ctx.beginPath();
+              ctx.fillStyle = "rgba(255, 255, 255, 1)";
+              if(boolConfig[i] == 'true') {
+                ctx.arc(settingsCanvas.width - 25, boolConfigStartY + boolConfigOffsetY * i, 10, 0, 2 * Math.PI);
+              } else {
+                ctx.arc(settingsCanvas.width - 45, boolConfigStartY + boolConfigOffsetY * i, 10, 0, 2 * Math.PI);
+              }
+              ctx.fill();
+              if(boolConfigClicked[i] == true) {
+                if(boolConfig[i] == 'false') {
+                  boolConfigClicked[i] = false;
+                  localStorage.setItem(boolConfigKeys[i], 'false');
                   // make sure not to change visiblity slot
                   activeVisibilitySlot--;
                   if (activeVisibilitySlot < 0) activeVisibilitySlot = 3;
@@ -1050,21 +1061,20 @@ angular.module('beamng.apps')
                   if(i == 3 || i == 5 || i == 7) {
                     setupMap(navMapData);
                   }
-                  if(config[4] == 'false' && config[7] == 'true') { 
+                  if(boolConfig[4] == 'false' && boolConfig[7] == 'true') { 
                     document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
                   } else {
                     document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '0';
                   }
-                  if(config[2] == 'true' && config[4] == 'true') { 
+                  if(boolConfig[2] == 'true' && boolConfig[4] == 'true') { 
                     document.getElementById('speedTiedZoomWarning').style.opacity = '1';
                   } else {
                     document.getElementById('speedTiedZoomWarning').style.opacity = '0';
                   }
                 }
-              } else {
-                if(config[i] != 'false') {
-                  config[i] = 'false'
-                  localStorage.setItem(configKeys[i], 'false');
+                if(boolConfig[i] == 'true') {
+                  boolConfigClicked[i] = false;
+                  localStorage.setItem(boolConfigKeys[i], 'true');
                   // make sure not to change visiblity slot
                   activeVisibilitySlot--;
                   if (activeVisibilitySlot < 0) activeVisibilitySlot = 3;
@@ -1074,12 +1084,12 @@ angular.module('beamng.apps')
                   if(i == 3 || i == 5 || i == 7) {
                     setupMap(navMapData);
                   }
-                  if(config[4] == 'false' && config[7] == 'true') { 
+                  if(boolConfig[4] == 'false' && boolConfig[7] == 'true') { 
                     document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
                   } else {
                     document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '0';
                   }
-                  if(config[2] == 'true' && config[4] == 'true') { 
+                  if(boolConfig[2] == 'true' && boolConfig[4] == 'true') { 
                     document.getElementById('speedTiedZoomWarning').style.opacity = '1';
                   } else {
                     document.getElementById('speedTiedZoomWarning').style.opacity = '0';
@@ -1211,7 +1221,7 @@ angular.module('beamng.apps')
               }).prependTo(svg);
 
             } 
-            if(config[5] == 'true') {
+            if(boolConfig[5] == 'true') {
               if (maxX == -999 && minX == 999 && maxY == -999 && minY == 999) {
                 minX = -2048;
                 maxX = 2048;
