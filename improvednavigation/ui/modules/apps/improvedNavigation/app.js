@@ -335,6 +335,11 @@ angular.module('beamng.apps')
               Having North Lock disabled and Show Offscreen Vehicles enabled will cause them to conflict, Show Offscreen Vehicles will not work as intended.
             </span>
           </span>
+          <span class="settingswarning" id="speedTiedZoomWarning">Warning regarding speed tied zoom (hover for more info).
+            <span class="tooltiptextlines3" style="position:fixed; bottom:5%; left:18%;">
+              in 0.24, they removed obj.vel, which was used when speed tied zoom and lock north were enabled, they do not work nearly as nicely anymore.
+            </span>
+          </span>
         </div>
         <!-- Collectible Display -->
         <div ng-if="collectableTotal > 0" style="font-size: 1.2em; padding: 1%; color: white; background-color: rgba(0, 0, 0, 0.3); position: absolute; top:15px; left: 15px">
@@ -403,6 +408,11 @@ angular.module('beamng.apps')
             document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
           }
         }
+        if(config[2] == 'true') { // if speed tied zoom is enabled
+          if(config[4] == 'false') { // if lock north is disabled
+            document.getElementById('speedTiedZoomWarning').style.opacity = '1';
+          }
+        }
         
         var baseMapZoomSpeed = 25;
         var mapZoomSpeed = 0;
@@ -427,6 +437,9 @@ angular.module('beamng.apps')
         // receive live data from the GE map
         var vehicleShapes = {};
         var lastcontrolID = -1;
+
+        let staticMarkersDict = {}
+
         var collectableShapes = {};
         // group to store all collectable svgs
         var collGroup;
@@ -527,9 +540,11 @@ angular.module('beamng.apps')
         scope.$on('NavigationMapUpdate', function (event, data) {
           if (!mapReady || !data) return;
           updateNavMap(data);
-          // center map on thing that is controlled
           centerMap(data.objects[data.controlID]);
         });
+        let borderWidth = 0
+        let borderHeight = 0
+        let appCircleSizeSquared = 0
         scope.$on('app:resized', function (event, streams) {
           element.css({
             'width': streams.width-25 + "px",
@@ -539,7 +554,8 @@ angular.module('beamng.apps')
           settingsCanvas.height = streams.height-25
           offScreenVehicleCanvas.width = streams.width-25
           offScreenVehicleCanvas.height = streams.height-25
-          setupMap();
+          appCircleSizeSquared = borderWidth * borderWidth + borderHeight * borderHeight
+          setupMap()
         });
 
         scope.$on('$destroy', function () {
@@ -551,15 +567,18 @@ angular.module('beamng.apps')
         // receive the one-time map setup
         scope.$on('NavigationMap', function (event, data) {
           if (data && !init) {
-            setupMap(data);
-            navMapData = data;
-            init = true;
+            setupMap(data)
+            init = true
           }
-        });
+        })
 
         scope.$on('CollectablesInit', (event, data) => {
-          if (data) setupCollectables(data);
-        });
+          if (data) setupCollectables(data)
+        })
+
+        scope.$on('NavigationStaticMarkers', (event, data) => {
+          if (data) setupStaticMarkers(data)
+        })
 
         var prevMarkers = null;
         scope.$on('NavigationGroundMarkersUpdate', (evenet, data) => {
@@ -715,7 +734,7 @@ angular.module('beamng.apps')
           ctx.arc(x2, y2, w2, 0, 2 * Math.PI);
 
           ctx.fill();
-      }
+        }
 
         function _createLine(p1, p2, color) {
 
@@ -735,16 +754,54 @@ angular.module('beamng.apps')
         }
 
         function centerMap(obj) {
+          console.log(obj.rot)
           var speedZoomMultiplier = 2;
+
+          // added in 0.3.1, due to obj.vel being removed in version 0.24
           if(zoomStates[zoomSlot] <= 0 && config[2] == "true") { // removes speed based zoom if you are zoomed too far in
-            var zoomX = -(1 + (obj.vel[0] * 3.6) * 1.5); // speed tied zoom
-            var zoomY = 1 + (obj.vel[1] * 3.6) * 1.5;
-            var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200);
+            if(config[4] == "true") { // if lock north is enabled
+              obj.dir = [
+                0, // north, [0]
+                0, // east, [1]
+                0, // south, [2]
+                0, // west, [3]
+                1 // used to find if north/south is in the positives or the negatives, [4]
+              ]; // object direction
+              
+              if(obj.rot >= 90 || obj.rot <= -90) {
+                obj.dir[0] = 1; // north = true
+                if(obj.rot >= 90) {
+                  obj.dir[4] = 1
+                } else {
+                  obj.dir[4] = -1
+                }
+              } else if(obj.rot <= 90 && obj.rot >= -90) {
+                obj.dir[2] = -1; // south = true
+              }
+
+              if(obj.rot <= 180 && obj.rot >= 0) {
+                obj.dir[1] = 1; // east = true
+              } else if(obj.rot >= -180 && obj.rot <= 0) {
+                obj.dir[3] = -1; // west = true
+              }
+              obj.vel = [
+                (((obj.dir[0]*obj.speed)*(obj.rot/(180*obj.dir[4]))) + ((obj.dir[2]*obj.speed)*((obj.rot+90)/90))), // north/south
+                ((obj.dir[1]*obj.speed)*Math.min((90/obj.rot), 1)+((obj.dir[3]*obj.speed)*Math.min((-90/obj.rot), 1))) // east/west
+              ];
+              var zoomX = -(1 + (obj.vel[1]) * 1.5); // speed tied zoom
+              var zoomY = 1 + (obj.vel[0]) * 1.5;
+              var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200);
+            } else {
+              var zoomX = 0;
+              var zoomY = Math.min(1 + (obj.speed * 3.6) * 1.5, 200);;
+              var zoom = Math.min(1 + (obj.speed * 3.6) * 1.5, 200);
+            }
           } else {
-            var zoomX = 0
-            var zoomY = 0
-            var zoom = 0
+            var zoomX = 0;
+            var zoomY = 0;
+            var zoom = 0;
           }
+
           // center on what?
           var focusX = -obj.pos[0] / mapScale;
           var focusY = obj.pos[1] / mapScale;
@@ -986,12 +1043,15 @@ angular.module('beamng.apps')
                   if(i == 3 || i == 5 || i == 7) {
                     setupMap(navMapData);
                   }
-                  if(config[4] == 'false') { // if north lock is disabled
-                    if(config[7] == 'true') { // if show offscreen vehicles is enabled
-                      document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
-                    }
-                  } else { // if north lock is enabled
+                  if(config[4] == 'false' && config[7] == 'true') { 
+                    document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
+                  } else {
                     document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '0';
+                  }
+                  if(config[2] == 'true' && config[4] == 'true') { 
+                    document.getElementById('speedTiedZoomWarning').style.opacity = '1';
+                  } else {
+                    document.getElementById('speedTiedZoomWarning').style.opacity = '0';
                   }
                 }
               } else {
@@ -1007,14 +1067,15 @@ angular.module('beamng.apps')
                   if(i == 3 || i == 5 || i == 7) {
                     setupMap(navMapData);
                   }
-                  if(config[4] == 'true') { // if north lock is enabled
+                  if(config[4] == 'false' && config[7] == 'true') { 
+                    document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
+                  } else {
                     document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '0';
-                  } else { // if north lock is disabled
-                    if(config[7] == 'false') { // if show offscreen vehicles is disabled
-                      document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '0';
-                    } else { // if show offscreen vehicles is enabled
-                      document.getElementById('northLockAndShowOffscreenVehicles').style.opacity = '1';
-                    }
+                  }
+                  if(config[2] == 'true' && config[4] == 'true') { 
+                    document.getElementById('speedTiedZoomWarning').style.opacity = '1';
+                  } else {
+                    document.getElementById('speedTiedZoomWarning').style.opacity = '0';
                   }
                 }
               }
