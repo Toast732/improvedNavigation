@@ -1103,6 +1103,7 @@ angular.module('beamng.apps')
           return theta;
         }
         async function setupMap(data) {
+          await sleep(250);
           if(canvas == null) {
             //console.error('setupMap called before element is ready');
             return
