@@ -341,6 +341,9 @@ angular.module('beamng.apps')
         var bgImage = null;
         var red = true;
 
+        var filterStrength = 20;
+        var frameTime = 0, lastLoop = new Date, thisLoop;
+
         // Setting Strings
         var boolConfigTitles = ['Smooth Zoom', 'Display Zoom Level', 'Speed Tied Zoom', 'Scale Map Elements with Zoom', 'Lock North', 'Show Grid', 'Centre On Player', 'Show Offscreen Vehicles']
         var boolConfigTooltips = [`With this enabled, the map will smoothly zoom instead of snapping to the next zoom level.`, `With this enabled, in the bottom left corner it will display the zoom magnification.`, `With this enabled, it will change the zoom according to your speed, and will look as if your vehicle is lagging behind the map.`, `With this enabled, the icons such as your player icon and ai vehicle icons will scale according to the zoom. Helpful for when you're zoomed out extremely far.`, `With this enabled, the map will be locked to point north.`, `With this enabled, the map will force the grid to show, even over official maps.`, `With this enabled, it will focus exactly on the player instead of ahead of the player.`, `With this enabled, any vehicles that are too far to be seen on the minimap will have an arrow pointing towards it on the border of the map.`]
@@ -881,6 +884,9 @@ angular.module('beamng.apps')
               updatePlayerShape(data.controlID, data); // update shape of new vehicle
               lastcontrolID = data.controlID;
             }
+            var thisFrameTime = (thisLoop=new Date) - lastLoop;
+            frameTime+= (thisFrameTime - frameTime) / filterStrength;
+            lastLoop = thisLoop;
             // get size of canvas
             var borderWidth = offScreenVehicleCanvas.width;
             var borderHeight = offScreenVehicleCanvas.height;
@@ -1106,6 +1112,9 @@ angular.module('beamng.apps')
             }
           }
         }
+        setInterval(function(){
+          console.log((1000/frameTime).toFixed(1) + " fps");
+        },1000);
         function getAngle(originX, originY, targetX, targetY) {
           var dx = originX - targetX;
           var dy = originY - targetY;
